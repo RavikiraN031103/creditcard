@@ -58,30 +58,19 @@ export default function Main() {
     const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
     const panRegex = /^[A-Za-z0-9]+$/;
 
-    if (!form.userid) {
-      alert("User ID is required");
-      return false;
-    }
-    if (!form.name || !nameRegex.test(form.name)) {
-      alert("Full name should contain only alphabets");
-      return false;
-    }
-    if (!form.address || !addressRegex.test(form.address)) {
-      alert("Address should contain only alphabets, numbers, commas, or periods");
-      return false;
-    }
-    if (!mobileRegex.test(form.mobile)) {
-      alert("Mobile number should contain exactly 10 digits");
-      return false;
-    }
-    if (!form.email.includes("@")) {
-      alert("Enter a valid email");
-      return false;
-    }
-    if (!form.pan || !panRegex.test(form.pan)) {
-      alert("PAN should contain only alphabets and numbers");
-      return false;
-    }
+    if (!form.userid) return alert("User ID is required"), false;
+    if (!form.name || !nameRegex.test(form.name))
+      return alert("Full name should contain only alphabets"), false;
+    if (!form.address || !addressRegex.test(form.address))
+      return alert(
+        "Address should contain only alphabets, numbers, commas, or periods"
+      ), false;
+    if (!mobileRegex.test(form.mobile))
+      return alert("Mobile number should contain exactly 10 digits"), false;
+    if (!form.email.includes("@"))
+      return alert("Enter a valid email"), false;
+    if (!form.pan || !panRegex.test(form.pan))
+      return alert("PAN should contain only alphabets and numbers"), false;
     return true;
   };
 
@@ -161,7 +150,9 @@ export default function Main() {
           <p>No Joining Fee & No Annual Fee</p>
           <div className="features">
             <div className="feature">💳 Global Banking Advantage</div>
-            <div className="feature-sub">Enjoy Reward Points on every purchase</div>
+            <div className="feature-sub">
+              Enjoy Reward Points on every purchase
+            </div>
             <div className="feature-sub">Access exclusive airport lounges</div>
           </div>
           <button className="apply-btn" onClick={() => setShowModal(true)}>
@@ -177,8 +168,15 @@ export default function Main() {
       {/* Privileges Section */}
       <section className="privileges">
         <h2>Exclusive Privileges</h2>
-        <div className="carousel" onMouseEnter={stopAutoSlide} onMouseLeave={startAutoSlide}>
-          <div className="cards" style={{ transform: `translateX(-${slide * 280}px)` }}>
+        <div
+          className="carousel"
+          onMouseEnter={stopAutoSlide}
+          onMouseLeave={startAutoSlide}
+        >
+          <div
+            className="cards"
+            style={{ transform: `translateX(-${slide * 280}px)` }}
+          >
             {slides.map((s, i) => (
               <div key={i} className={`card ${i === slide ? "active" : ""}`}>
                 <h3>{s.title}</h3>
@@ -195,7 +193,10 @@ export default function Main() {
           <h2>FAQs</h2>
           {faqs.map((f, i) => (
             <div key={i} className={`faq-item ${open === i ? "open" : ""}`}>
-              <button className="faq-question" onClick={() => setOpen(open === i ? null : i)}>
+              <button
+                className="faq-question"
+                onClick={() => setOpen(open === i ? null : i)}
+              >
                 {open === i ? "✖" : "+"} {f.q}
               </button>
               {open === i && <p className="faq-answer">{f.a}</p>}
@@ -212,56 +213,156 @@ export default function Main() {
             <button className="close-btn" onClick={handleClose}>
               ✖
             </button>
+
             <form
               className="form"
-              onSubmit={step === 1 ? handleNext : step === 2 ? handleNext2 : handleSubmit}
+              onSubmit={
+                step === 1 ? handleNext : step === 2 ? handleNext2 : handleSubmit
+              }
             >
               <h2>Application Form — Step {step} of 3</h2>
 
               {step === 1 && (
                 <>
-                  <label>User ID<input value={form.userid} onChange={e=>setForm({...form, userid:e.target.value})}/></label>
-                  <label>Full Name<input value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/></label>
-                  <label>Address<textarea value={form.address} onChange={e=>setForm({...form, address:e.target.value})}></textarea></label>
-                  <label>Mobile Number<input value={form.mobile} onChange={e=>setForm({...form, mobile:e.target.value})}/></label>
-                  <label>Email<input value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/></label>
-                  <label>PAN Number<input value={form.pan} onChange={e=>setForm({...form, pan:e.target.value})}/></label>
-                  <label>Date of Birth<input value={form.dob} onChange={e=>setForm({...form, dob:e.target.value})}/></label>
-                  <label>Profession<select value={form.profession} onChange={e=>setForm({...form, profession:e.target.value})}>
-                    <option value=\"\">Select</option>
-                    <option>Student</option>
-                    <option>Employee</option>
-                    <option>Self Employed</option>
-                  </select></label>
-                  <button type=\"submit\">Next</button>
+                  <label>
+                    User ID
+                    <input
+                      value={form.userid}
+                      onChange={(e) =>
+                        setForm({ ...form, userid: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Full Name
+                    <input
+                      value={form.name}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Address
+                    <textarea
+                      value={form.address}
+                      onChange={(e) =>
+                        setForm({ ...form, address: e.target.value })
+                      }
+                    ></textarea>
+                  </label>
+                  <label>
+                    Mobile Number
+                    <input
+                      value={form.mobile}
+                      onChange={(e) =>
+                        setForm({ ...form, mobile: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      value={form.email}
+                      onChange={(e) =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    PAN Number
+                    <input
+                      value={form.pan}
+                      onChange={(e) =>
+                        setForm({ ...form, pan: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Date of Birth
+                    <input
+                      value={form.dob}
+                      onChange={(e) =>
+                        setForm({ ...form, dob: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Profession
+                    <select
+                      value={form.profession}
+                      onChange={(e) =>
+                        setForm({ ...form, profession: e.target.value })
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option>Student</option>
+                      <option>Employee</option>
+                      <option>Self Employed</option>
+                    </select>
+                  </label>
+                  <button type="submit">Next</button>
                 </>
               )}
 
               {step === 2 && (
                 <>
-                  <label>Upload ID Proof<input type=\"file\" name=\"idProof\" onChange={handleFileChange}/></label>
-                  <label>Upload PAN Card<input type=\"file\" name=\"panCard\" onChange={handleFileChange}/></label>
-                  <label>Upload Photograph<input type=\"file\" name=\"photo\" onChange={handleFileChange}/></label>
-                  <div className=\"form-nav\">
-                    <button type=\"button\" onClick={() => setStep(1)}>Back</button>
-                    <button type=\"submit\">Next</button>
+                  <label>
+                    Upload ID Proof
+                    <input
+                      type="file"
+                      name="idProof"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  <label>
+                    Upload PAN Card
+                    <input
+                      type="file"
+                      name="panCard"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  <label>
+                    Upload Photograph
+                    <input
+                      type="file"
+                      name="photo"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  <div className="form-nav">
+                    <button type="button" onClick={() => setStep(1)}>
+                      Back
+                    </button>
+                    <button type="submit">Next</button>
                   </div>
                 </>
               )}
 
               {step === 3 && (
                 <>
-                  <label>Choose Card Type<select value={form.cardType} onChange={e=>setForm({...form, cardType:e.target.value})}>
-                    <option value=\"\">Select Card Type</option>
-                    <option>Platinum Card</option>
-                    <option>Titanium Card</option>
-                    <option>Cashback Card</option>
-                    <option>Rewards Card</option>
-                    <option>Infinite Card</option>
-                  </select></label>
-                  <div className=\"form-nav\">
-                    <button type=\"button\" onClick={() => setStep(2)}>Back</button>
-                    <button type=\"submit\">Submit</button>
+                  <label>
+                    Choose Card Type
+                    <select
+                      value={form.cardType}
+                      onChange={(e) =>
+                        setForm({ ...form, cardType: e.target.value })
+                      }
+                    >
+                      <option value="">Select Card Type</option>
+                      <option>Platinum Card</option>
+                      <option>Titanium Card</option>
+                      <option>Cashback Card</option>
+                      <option>Rewards Card</option>
+                      <option>Infinite Card</option>
+                    </select>
+                  </label>
+                  <div className="form-nav">
+                    <button type="button" onClick={() => setStep(2)}>
+                      Back
+                    </button>
+                    <button type="submit">Submit</button>
                   </div>
                 </>
               )}
@@ -272,8 +373,8 @@ export default function Main() {
 
       {/* Success Modal */}
       {showSuccess && (
-        <div className=\"success-overlay\">
-          <div className=\"success-box\">
+        <div className="success-overlay">
+          <div className="success-box">
             <h3>✅ Application Submitted Successfully!</h3>
             <button onClick={() => setShowSuccess(false)}>Close</button>
           </div>
@@ -281,74 +382,4 @@ export default function Main() {
       )}
     </main>
   );
-}
-
-
-
-
-
-
-.main {width: 1100px; margin: 0 auto; padding: 40px 0;}
-.hero {display: flex; gap: 40px; align-items: flex-start;}
-.hero-left {flex: 1;}
-.hero-left h1 {color: #0072bb; font-size: 36px;}
-.hero-left p {color: #00a877; font-weight: 600;}
-.features {margin-top: 20px;}
-.feature {background: #0072bb; color: white; padding: 10px 16px; border-radius: 24px; display: inline-block; margin-bottom: 10px;}
-.feature-sub {background: #d6f2e8; padding: 8px 12px; border-radius: 16px; margin-top: 4px; display: block;}
-.apply-btn {background: linear-gradient(90deg, #0072bb, #00a877); border: none; color: white; padding: 10px 24px; border-radius: 24px; cursor: pointer; margin-top: 20px; font-weight: 600;}
-.placeholder-image {background: #e3f3f8; color: #0072bb; height: 320px; width: 360px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold;}
-
-/* Modal Styles */
-.modal-overlay {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s;}
-.modal-box {background: #f2f8fb; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 420px; position: relative; animation: zoomIn 0.3s;}
-.close-btn {position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; color: #0072bb; cursor: pointer;}
-.form label {display: block; margin-bottom: 12px; color: #00425c;}
-.form input, .form select, .form textarea {width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px;}
-.form textarea {resize: vertical; min-height: 60px;}
-.form button {background: #0072bb; color: white; padding: 10px 24px; border: none; border-radius: 24px; margin-top: 10px; cursor: pointer;}
-.form-nav {display: flex; justify-content: space-between;}
-.form-nav button {width: 48%;}
-@keyframes fadeIn {from {opacity: 0;} to {opacity: 1;}}
-@keyframes zoomIn {from {transform: scale(0.9);} to {transform: scale(1);}}
-
-/* Success Modal */
-.success-overlay {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;}
-.success-box {background: #fff; border-radius: 10px; padding: 30px 40px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
-.success-box h3 {background: linear-gradient(90deg, #0072bb, #00a877); color: white; margin: -30px -40px 20px; padding: 12px; border-radius: 10px 10px 0 0;}
-.success-box button {background: #00a877; border: none; color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer;}
-
-/* Carousel & FAQ same as before */
-.privileges {text-align: center; margin: 80px auto; overflow: hidden; width: 900px;}
-.privileges h2 {color: #0072bb; font-size: 32px; margin-bottom: 30px;}
-.carousel {display: flex; overflow: hidden; justify-content: center; position: relative;}
-.cards {display: flex; transition: transform 0.8s ease-in-out; gap: 40px;}
-.card {background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 240px; flex-shrink: 0; opacity: 0.7; transform: scale(0.9); transition: all 0.4s ease;}
-.card.active {opacity: 1; transform: scale(1.05);}
-.faq {margin: 80px auto;}
-.faq-box {background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;}
-.faq-box h2 {background: linear-gradient(180deg, #0072bb, #00a877); color: white; padding: 16px; margin: 0;}
-.faq-item {border-top: 1px solid #d0e7ef;}
-.faq-question {background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; font-size: 16px; cursor: pointer; color: #0072bb;}
-.faq-answer {padding: 0 16px 16px; margin: 0; color: #333;}
-.view-more {display: block; margin: 16px auto; background: #0072bb; color: white; border: none; padding: 10px 24px; border-radius: 20px; cursor: pointer;}
-/* Modal box glow */
-.modal-box {
-  background: #f2f8fb;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 114, 187, 0.4), 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: 420px;
-  position: relative;
-  animation: zoomIn 0.3s;
-}
-
-/* Success modal glow */
-.success-box {
-  background: #fff;
-  border-radius: 10px;
-  padding: 30px 40px;
-  text-align: center;
-  box-shadow: 0 0 25px rgba(0, 114, 187, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
 }

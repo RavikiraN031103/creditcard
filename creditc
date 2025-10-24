@@ -383,3 +383,50 @@ export default function Main() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Modal box scroll fix --- */
+.modal-box {
+  background: #f2f8fb;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 114, 187, 0.4), 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 420px;
+  max-height: 90vh;             /* ✅ Prevent modal from going out of page */
+  overflow-y: auto;             /* ✅ Scroll inside modal */
+  position: relative;
+  animation: zoomIn 0.3s ease;
+}
+
+/* Optional: smooth scrollbar for modal content */
+.modal-box::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-box::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 114, 187, 0.4);
+  border-radius: 10px;
+}
+
+/* --- Responsive adjustment --- */
+@media (max-width: 600px) {
+  .modal-box {
+    width: 90%;
+    height: auto;
+    max-height: 90vh;
+  }
+}

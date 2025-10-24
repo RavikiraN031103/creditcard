@@ -1,0 +1,272 @@
+--- src/App.js ---
+import React from 'react';
+import Navbar from './components/Navbar';
+import Main from './components/Main';
+import Footer from './components/Footer';
+import './App.css';
+
+export default function App(){
+  return (
+    <div className="App">
+      <Navbar />
+      <Main />
+      <Footer />
+    </div>
+  );
+}
+
+--- src/App.css ---
+body {margin: 0; font-family: Arial, sans-serif; background-color: #f2f8fb;}
+.App {display: flex; flex-direction: column; min-height: 100vh;}
+
+--- src/components/Navbar.js ---
+import React from 'react';
+import './Navbar.css';
+
+export default function Navbar(){
+  return (
+    <header className="navbar">
+      <div className="navbar-container">
+        <div className="navbar-logo">Standard Chartered</div>
+      </div>
+    </header>
+  );
+}
+
+--- src/components/Navbar.css ---
+.navbar {background: linear-gradient(180deg, #0072bb, #00a877); color: white; padding: 18px 0;}
+.navbar-container {width: 1100px; margin: 0 auto;}
+.navbar-logo {font-size: 28px; font-weight: 700;}
+
+--- src/components/Main.js ---
+import React, {useState, useEffect} from 'react';
+import './Main.css';
+
+export default function Main(){
+  const [form, setForm] = useState({userid:'', name:'', address:'', mobile:'', email:'', pan:'', dob:'', profession:'', cardType:''});
+  const [step, setStep] = useState(1);
+  const [uploads, setUploads] = useState({idProof:null, panCard:null, photo:null});
+  const [slide, setSlide] = useState(0);
+  const [open, setOpen] = useState(null);
+  const slides = [
+    {title:'Enjoy benefits', text:'worth up to ₹500/- off on your tickets'},
+    {title:'Earn', text:'6X-12X REWARD POINTS on flights, hotels and shopping vouchers.'},
+    {title:'Get', text:'Activation voucher with Flat ₹1,200/- off'},
+  ];
+
+  // Auto carousel loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSlide((prev) => (prev + 1) % slides.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  const validateStep1 = () => {
+    const nameRegex = /^[A-Za-z ]+$/;
+    const mobileRegex = /^\d{10}$/;
+    const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
+    const panRegex = /^[A-Za-z0-9]+$/;
+
+    if(!form.userid){alert('User ID is required'); return false;}
+    if(!form.name || !nameRegex.test(form.name)){alert('Full name should contain only alphabets'); return false;}
+    if(!form.address || !addressRegex.test(form.address)){alert('Address should contain only alphabets, numbers, commas, or periods'); return false;}
+    if(!mobileRegex.test(form.mobile)){alert('Mobile number should contain exactly 10 digits'); return false;}
+    if(!form.email.includes('@')){alert('Enter a valid email'); return false;}
+    if(!form.pan || !panRegex.test(form.pan)){alert('PAN should contain only alphabets and numbers'); return false;}
+    return true;
+  };
+
+  const handleNext = (ev) => {
+    ev.preventDefault();
+    if(validateStep1()) setStep(2);
+  };
+
+  const handleNext2 = (ev) => {
+    ev.preventDefault();
+    if(!uploads.idProof || !uploads.panCard || !uploads.photo){
+      alert('Please upload all required documents');
+      return;
+    }
+    setStep(3);
+  };
+
+  const handleBack = () => setStep(step - 1);
+  const handleFileChange = (e) => {
+    const {name, files} = e.target;
+    setUploads({...uploads, [name]: files[0]});
+  };
+
+  const handleSubmit = (ev) => {
+    ev.preventDefault();
+    if(!form.cardType){
+      alert('Please select a card type before submitting');
+      return;
+    }
+    alert('Application submitted successfully (demo)');
+    setStep(1);
+    setForm({userid:'', name:'', address:'', mobile:'', email:'', pan:'', dob:'', profession:'', cardType:''});
+    setUploads({idProof:null, panCard:null, photo:null});
+  };
+
+  const faqs = [
+    {q:'What is the lowest Credit Card limit?', a:'The Credit Card limit varies depending on the Card issuer.'},
+    {q:'How do I see my Credit Card number online?', a:'Login to your Standard Chartered netbanking or app to view it.'},
+    {q:'How can I redeem Credit Card points for rewards?', a:'Visit the rewards portal to redeem your points.'},
+    {q:'How do I avail the BookMyShow offer?', a:'Offers are available under the entertainment category.'},
+  ];
+
+  return (
+    <main className="main">
+      <section className="hero">
+        <div className="hero-left">
+          <h1>Your lifestyle, empowered by Standard Chartered</h1>
+          <p>No Joining Fee & No Annual Fee</p>
+          <div className="features">
+            <div className="feature">💳 Global Banking Advantage</div>
+            <div className="feature-sub">Enjoy Reward Points on every purchase</div>
+            <div className="feature-sub">Access exclusive airport lounges</div>
+          </div>
+        </div>
+
+        <div className="hero-right">
+          <form className="form" onSubmit={step===1 ? handleNext : step===2 ? handleNext2 : handleSubmit}>
+            <h2>Application Form — Step {step} of 3</h2>
+
+            {step===1 && (
+              <>
+                <label>User ID<input value={form.userid} onChange={e=>setForm({...form, userid:e.target.value})}/></label>
+                <label>Full Name<input value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/></label>
+                <label>Address<textarea value={form.address} onChange={e=>setForm({...form, address:e.target.value})}></textarea></label>
+                <label>Mobile Number<input value={form.mobile} onChange={e=>setForm({...form, mobile:e.target.value})}/></label>
+                <label>Email<input value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/></label>
+                <label>PAN Number<input value={form.pan} onChange={e=>setForm({...form, pan:e.target.value})}/></label>
+                <label>Date of Birth<input value={form.dob} onChange={e=>setForm({...form, dob:e.target.value})}/></label>
+                <label>Profession<select value={form.profession} onChange={e=>setForm({...form, profession:e.target.value})}>
+                  <option value="">Select</option>
+                  <option>Student</option>
+                  <option>Employee</option>
+                  <option>Self Employed</option>
+                </select></label>
+                <button type="submit">Next</button>
+              </>
+            )}
+
+            {step===2 && (
+              <>
+                <label>Upload ID Proof<input type="file" name="idProof" onChange={handleFileChange}/></label>
+                <label>Upload PAN Card<input type="file" name="panCard" onChange={handleFileChange}/></label>
+                <label>Upload Photograph<input type="file" name="photo" onChange={handleFileChange}/></label>
+                <div className="form-nav">
+                  <button type="button" onClick={handleBack}>Back</button>
+                  <button type="submit">Next</button>
+                </div>
+              </>
+            )}
+
+            {step===3 && (
+              <>
+                <label>Choose Card Type<select value={form.cardType} onChange={e=>setForm({...form, cardType:e.target.value})}>
+                  <option value="">Select Card Type</option>
+                  <option>Platinum Card</option>
+                  <option>Titanium Card</option>
+                  <option>Cashback Card</option>
+                  <option>Rewards Card</option>
+                  <option>Infinite Card</option>
+                </select></label>
+                <div className="form-nav">
+                  <button type="button" onClick={handleBack}>Back</button>
+                  <button type="submit">Submit</button>
+                </div>
+              </>
+            )}
+          </form>
+        </div>
+      </section>
+
+      {/* Privileges Section with auto carousel */}
+      <section className="privileges">
+        <h2>Exclusive Privileges</h2>
+        <div className="carousel" onMouseEnter={() => clearInterval()}>
+          <div className="cards" style={{transform:`translateX(-${slide * 280}px)`}}>
+            {slides.map((s,i)=>(
+              <div key={i} className={`card ${i===slide ? 'active' : ''}`}>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="faq">
+        <div className="faq-box">
+          <h2>FAQs</h2>
+          {faqs.map((f,i)=>(
+            <div key={i} className={`faq-item ${open===i ? 'open' : ''}`}>
+              <button className="faq-question" onClick={()=>setOpen(open===i?null:i)}>
+                {open===i ? '✖' : '+'} {f.q}
+              </button>
+              {open===i && <p className="faq-answer">{f.a}</p>}
+            </div>
+          ))}
+          <button className="view-more">View More</button>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+--- src/components/Main.css ---
+.main {width: 1100px; margin: 0 auto; padding: 40px 0;}
+.hero {display: flex; gap: 40px; align-items: flex-start;}
+.hero-left {flex: 1;}
+.hero-left h1 {color: #0072bb; font-size: 36px;}
+.hero-left p {color: #00a877; font-weight: 600;}
+.features {margin-top: 20px;}
+.feature {background: #0072bb; color: white; padding: 10px 16px; border-radius: 24px; display: inline-block; margin-bottom: 10px;}
+.feature-sub {background: #d6f2e8; padding: 8px 12px; border-radius: 16px; margin-top: 4px; display: block;}
+.hero-right .form {background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 380px;}
+.form h2 {background: linear-gradient(180deg, #0072bb, #00a877); color: white; padding: 12px; margin: -20px -20px 20px; border-radius: 8px 8px 0 0; text-align: center;}
+.form label {display: block; margin-bottom: 12px; color: #00425c;}
+.form input, .form select, .form textarea {width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px;}
+.form textarea {resize: vertical; min-height: 60px;}
+.form button {background: #0072bb; color: white; padding: 10px 24px; border: none; border-radius: 24px; margin-top: 10px; cursor: pointer;}
+.form-nav {display: flex; justify-content: space-between;}
+.form-nav button {width: 48%;}
+
+/* Privileges */
+.privileges {text-align: center; margin: 80px auto; overflow: hidden; width: 900px;}
+.privileges h2 {color: #0072bb; font-size: 32px; margin-bottom: 30px;}
+.carousel {display: flex; overflow: hidden; justify-content: center; position: relative;}
+.cards {display: flex; transition: transform 0.8s ease-in-out; gap: 40px;}
+.card {background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 240px; flex-shrink: 0; opacity: 0.7; transform: scale(0.9); transition: all 0.4s ease;}
+.card.active {opacity: 1; transform: scale(1.05);}
+
+/* FAQ */
+.faq {margin: 80px auto;}
+.faq-box {background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;}
+.faq-box h2 {background: linear-gradient(180deg, #0072bb, #00a877); color: white; padding: 16px; margin: 0;}
+.faq-item {border-top: 1px solid #d0e7ef;}
+.faq-question {background: none; border: none; width: 100%; text-align: left; padding: 14px 16px; font-size: 16px; cursor: pointer; color: #0072bb;}
+.faq-answer {padding: 0 16px 16px; margin: 0; color: #333;}
+.view-more {display: block; margin: 16px auto; background: #0072bb; color: white; border: none; padding: 10px 24px; border-radius: 20px; cursor: pointer;}
+
+--- src/components/Footer.js ---
+import React from 'react';
+import './Footer.css';
+
+export default function Footer(){
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <p>*Terms and Conditions of Standard Chartered Bank apply. For details visit www.sc.com</p>
+      </div>
+    </footer>
+  );
+}
+
+--- src/components/Footer.css ---
+.footer {background: linear-gradient(180deg, #0072bb, #00a877); color: white; text-align: center; padding: 20px 0; margin-top: auto;}
+.footer-inner {width: 1100px; margin: 0 auto; font-size: 14px;}

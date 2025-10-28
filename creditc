@@ -219,3 +219,58 @@ public class Application {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
+---------------------------
+
+
+
+@PostMapping
+public ResponseEntity<?> saveApplication(
+        @RequestParam("userid") String userid,
+        @RequestParam("name") String name,
+        @RequestParam("address") String address,
+        @RequestParam("mobile") String mobile,
+        @RequestParam("email") String email,
+        @RequestParam("pan") String pan,
+        @RequestParam("dob") String dob,
+        @RequestParam("profession") String profession,
+        @RequestParam("cardType") String cardType,
+        @RequestParam(value = "idProof", required = false) MultipartFile idProof,
+        @RequestParam(value = "panCard", required = false) MultipartFile panCard,
+        @RequestParam(value = "photo", required = false) MultipartFile photo
+) {
+    try {
+        // ✅ Save directly to Desktop "uploads" folder
+        String desktopPath = System.getProperty("user.home") + "/Desktop/uploads/";
+        File directory = new File(desktopPath);
+        if (!directory.exists()) directory.mkdirs();  // create folder if not exists
+
+        if (idProof != null && !idProof.isEmpty())
+            idProof.transferTo(new File(desktopPath + idProof.getOriginalFilename()));
+
+        if (panCard != null && !panCard.isEmpty())
+            panCard.transferTo(new File(desktopPath + panCard.getOriginalFilename()));
+
+        if (photo != null && !photo.isEmpty())
+            photo.transferTo(new File(desktopPath + photo.getOriginalFilename()));
+
+        // ✅ Save data to DB
+        Application app = new Application();
+        app.setUserid(userid);
+        app.setName(name);
+        app.setAddress(address);
+        app.setMobile(mobile);
+        app.setEmail(email);
+        app.setPan(pan);
+        app.setDob(dob);
+        app.setProfession(profession);
+        app.setCardType(cardType);
+
+        applicationRepository.save(app);
+
+        return ResponseEntity.ok("✅ Application saved successfully! Files stored on Desktop.");
+    } catch (IOException e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("❌ File upload failed: " + e.getMessage());
+    }
+}

@@ -42,3 +42,12 @@ const handleSubmit = async (e) => {
     alert("Submission failed. Please try again.");
   }
 };
+
+
+
+
+
+# Enable multipart uploads
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=20MB

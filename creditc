@@ -256,52 +256,76 @@ public ResponseEntity<?> saveApplication(
 -------------------------------
 
 
+package com.bank.entity;
 
-@PostMapping
-public ResponseEntity<?> saveApplication(
-        @RequestParam("userid") String userid,
-        @RequestParam("name") String name,
-        @RequestParam("address") String address,
-        @RequestParam("mobile") String mobile,
-        @RequestParam("email") String email,
-        @RequestParam("pan") String pan,
-        @RequestParam("dob") String dob,
-        @RequestParam("profession") String profession,
-        @RequestParam("cardType") String cardType,
-        @RequestParam(value = "idProof", required = false) MultipartFile idProof,
-        @RequestParam(value = "panCard", required = false) MultipartFile panCard,
-        @RequestParam(value = "photo", required = false) MultipartFile photo
-) {
-    try {
-        Application app = new Application();
-        app.setUserid(userid);
-        app.setName(name);
-        app.setAddress(address);
-        app.setMobile(mobile);
-        app.setEmail(email);
-        app.setPan(pan);
-        app.setDob(dob);
-        app.setProfession(profession);
-        app.setCardType(cardType);
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
-        // ✅ Save file bytes directly into DB
-        if (idProof != null && !idProof.isEmpty()) app.setIdProof(idProof.getBytes());
-        if (panCard != null && !panCard.isEmpty()) app.setPanCard(panCard.getBytes());
-        if (photo != null && !photo.isEmpty()) app.setPhoto(photo.getBytes());
+@Entity
+@Table(name = "applications")
+public class Application {
 
-        Application savedApp = applicationRepository.save(app);
-        return ResponseEntity.ok("✅ Application ID " + savedApp.getId() + " saved successfully with files in DB.");
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("❌ Error saving application: " + e.getMessage());
-    }
-}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    private String userid;
+    private String name;
+    private String address;
+    private String mobile;
+    private String email;
+    private String pan;
+    private String dob;
+    private String profession;
+    private String cardType;
 
+    @Lob
+    @Column(name = "id_proof", columnDefinition = "BYTEA")
+    private byte[] idProof;
 
+    @Lob
+    @Column(name = "pan_card", columnDefinition = "BYTEA")
+    private byte[] panCard;
 
-public byte[] getIdProof() { return idProof; }
+    @Lob
+    @Column(name = "photo", columnDefinition = "BYTEA")
+    private byte[] photo;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    // ✅ Getters & Setters (all explicit)
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getUserid() { return userid; }
+    public void setUserid(String userid) { this.userid = userid; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getMobile() { return mobile; }
+    public void setMobile(String mobile) { this.mobile = mobile; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPan() { return pan; }
+    public void setPan(String pan) { this.pan = pan; }
+
+    public String getDob() { return dob; }
+    public void setDob(String dob) { this.dob = dob; }
+
+    public String getProfession() { return profession; }
+    public void setProfession(String profession) { this.profession = profession; }
+
+    public String getCardType() { return cardType; }
+    public void setCardType(String cardType) { this.cardType = cardType; }
+
+    public byte[] getIdProof() { return idProof; }
     public void setIdProof(byte[] idProof) { this.idProof = idProof; }
 
     public byte[] getPanCard() { return panCard; }
@@ -309,3 +333,7 @@ public byte[] getIdProof() { return idProof; }
 
     public byte[] getPhoto() { return photo; }
     public void setPhoto(byte[] photo) { this.photo = photo; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+}

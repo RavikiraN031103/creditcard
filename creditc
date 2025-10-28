@@ -297,3 +297,15 @@ public ResponseEntity<?> saveApplication(
                 .body("❌ Error saving application: " + e.getMessage());
     }
 }
+
+
+
+
+public byte[] getIdProof() { return idProof; }
+    public void setIdProof(byte[] idProof) { this.idProof = idProof; }
+
+    public byte[] getPanCard() { return panCard; }
+    public void setPanCard(byte[] panCard) { this.panCard = panCard; }
+
+    public byte[] getPhoto() { return photo; }
+    public void setPhoto(byte[] photo) { this.photo = photo; }

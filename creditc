@@ -253,7 +253,26 @@ public ResponseEntity<?> saveApplication(
         if (photo != null && !photo.isEmpty())
             photo.transferTo(new File(desktopPath + photo.getOriginalFilename()));
 
-        // ✅ Save data to DB
+-------------------------------
+
+
+
+@PostMapping
+public ResponseEntity<?> saveApplication(
+        @RequestParam("userid") String userid,
+        @RequestParam("name") String name,
+        @RequestParam("address") String address,
+        @RequestParam("mobile") String mobile,
+        @RequestParam("email") String email,
+        @RequestParam("pan") String pan,
+        @RequestParam("dob") String dob,
+        @RequestParam("profession") String profession,
+        @RequestParam("cardType") String cardType,
+        @RequestParam(value = "idProof", required = false) MultipartFile idProof,
+        @RequestParam(value = "panCard", required = false) MultipartFile panCard,
+        @RequestParam(value = "photo", required = false) MultipartFile photo
+) {
+    try {
         Application app = new Application();
         app.setUserid(userid);
         app.setName(name);
@@ -265,12 +284,16 @@ public ResponseEntity<?> saveApplication(
         app.setProfession(profession);
         app.setCardType(cardType);
 
-        applicationRepository.save(app);
+        // ✅ Save file bytes directly into DB
+        if (idProof != null && !idProof.isEmpty()) app.setIdProof(idProof.getBytes());
+        if (panCard != null && !panCard.isEmpty()) app.setPanCard(panCard.getBytes());
+        if (photo != null && !photo.isEmpty()) app.setPhoto(photo.getBytes());
 
-        return ResponseEntity.ok("✅ Application saved successfully! Files stored on Desktop.");
-    } catch (IOException e) {
+        Application savedApp = applicationRepository.save(app);
+        return ResponseEntity.ok("✅ Application ID " + savedApp.getId() + " saved successfully with files in DB.");
+    } catch (Exception e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("❌ File upload failed: " + e.getMessage());
+                .body("❌ Error saving application: " + e.getMessage());
     }
 }

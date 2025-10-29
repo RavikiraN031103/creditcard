@@ -1,261 +1,3 @@
-import axios from "axios"; // make sure this is at the top
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!form.cardType) {
-    alert("Please select a card type before submitting");
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    for (const key in form) formData.append(key, form[key]);
-    formData.append("idProof", uploads.idProof);
-    formData.append("panCard", uploads.panCard);
-    formData.append("photo", uploads.photo);
-
-    // ✅ POST to Spring Boot backend
-    await axios.post("http://localhost:8080/api/applications", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    setShowModal(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
-
-    setStep(1);
-    setForm({
-      userid: "",
-      name: "",
-      address: "",
-      mobile: "",
-      email: "",
-      pan: "",
-      dob: "",
-      profession: "",
-      cardType: "",
-    });
-    setUploads({ idProof: null, panCard: null, photo: null });
-  } catch (err) {
-    console.error("Error submitting form:", err);
-    alert("Submission failed. Please try again.");
-  }
-};
-
-
-
-
-
-# Enable multipart uploads
-spring.servlet.multipart.enabled=true
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=20MB
-
------------------------------------------------------
-
-
-
-package com.bank.entity;
-
-import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDateTime;
-
-@Data
-@Entity
-@Table(name = "applications")
-public class Application {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String userid;
-    private String name;
-    private String address;
-    private String mobile;
-    private String email;
-    private String pan;
-    private String dob;
-    private String profession;
-    private String cardType;
-    private LocalDateTime createdAt = LocalDateTime.now();
-}
----------------------------------------
-
-
-package com.bank.repository;
-
-import com.bank.entity.Application;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface ApplicationRepository extends JpaRepository<Application, Long> {}
--------------------------------------------
-
-package com.bank.controller;
-
-import com.bank.entity.Application;
-import com.bank.repository.ApplicationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-
-import java.io.File;
-import java.io.IOException;
-
-@RestController
-@RequestMapping("/api/applications")
-@CrossOrigin(origins = "http://localhost:3000") // React app URL
-public class ApplicationController {
-
-    @Autowired
-    private ApplicationRepository applicationRepository;
-
-    @PostMapping
-    public ResponseEntity<?> saveApplication(
-            @RequestParam("userid") String userid,
-            @RequestParam("name") String name,
-            @RequestParam("address") String address,
-            @RequestParam("mobile") String mobile,
-            @RequestParam("email") String email,
-            @RequestParam("pan") String pan,
-            @RequestParam("dob") String dob,
-            @RequestParam("profession") String profession,
-            @RequestParam("cardType") String cardType,
-            @RequestParam(value = "idProof", required = false) MultipartFile idProof,
-            @RequestParam(value = "panCard", required = false) MultipartFile panCard,
-            @RequestParam(value = "photo", required = false) MultipartFile photo
-    ) {
-        try {
-            // Save files locally
-            String uploadDir = "uploads/";
-            new File(uploadDir).mkdirs();
-
-            if (idProof != null) idProof.transferTo(new File(uploadDir + idProof.getOriginalFilename()));
-            if (panCard != null) panCard.transferTo(new File(uploadDir + panCard.getOriginalFilename()));
-            if (photo != null) photo.transferTo(new File(uploadDir + photo.getOriginalFilename()));
-
-            // Save form data to DB
-            Application app = new Application();
-            app.setUserid(userid);
-            app.setName(name);
-            app.setAddress(address);
-            app.setMobile(mobile);
-            app.setEmail(email);
-            app.setPan(pan);
-            app.setDob(dob);
-            app.setProfession(profession);
-            app.setCardType(cardType);
-
-            applicationRepository.save(app);
-
-            return ResponseEntity.ok("Application saved successfully!");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed");
-        }
-    }
-}
-
-----------------------------------------
-
-package com.bank.entity;
-
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "applications")
-public class Application {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String userid;
-    private String name;
-    private String address;
-    private String mobile;
-    private String email;
-    private String pan;
-    private String dob;
-    private String profession;
-    private String cardType;
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getUserid() { return userid; }
-    public void setUserid(String userid) { this.userid = userid; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public String getMobile() { return mobile; }
-    public void setMobile(String mobile) { this.mobile = mobile; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPan() { return pan; }
-    public void setPan(String pan) { this.pan = pan; }
-
-    public String getDob() { return dob; }
-    public void setDob(String dob) { this.dob = dob; }
-
-    public String getProfession() { return profession; }
-    public void setProfession(String profession) { this.profession = profession; }
-
-    public String getCardType() { return cardType; }
-    public void setCardType(String cardType) { this.cardType = cardType; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-}
----------------------------
-
-
-
-@PostMapping
-public ResponseEntity<?> saveApplication(
-        @RequestParam("userid") String userid,
-        @RequestParam("name") String name,
-        @RequestParam("address") String address,
-        @RequestParam("mobile") String mobile,
-        @RequestParam("email") String email,
-        @RequestParam("pan") String pan,
-        @RequestParam("dob") String dob,
-        @RequestParam("profession") String profession,
-        @RequestParam("cardType") String cardType,
-        @RequestParam(value = "idProof", required = false) MultipartFile idProof,
-        @RequestParam(value = "panCard", required = false) MultipartFile panCard,
-        @RequestParam(value = "photo", required = false) MultipartFile photo
-) {
-    try {
-        // ✅ Save directly to Desktop "uploads" folder
-        String desktopPath = System.getProperty("user.home") + "/Desktop/uploads/";
-        File directory = new File(desktopPath);
-        if (!directory.exists()) directory.mkdirs();  // create folder if not exists
-
-        if (idProof != null && !idProof.isEmpty())
-            idProof.transferTo(new File(desktopPath + idProof.getOriginalFilename()));
-
-        if (panCard != null && !panCard.isEmpty())
-            panCard.transferTo(new File(desktopPath + panCard.getOriginalFilename()));
-
-        if (photo != null && !photo.isEmpty())
-            photo.transferTo(new File(desktopPath + photo.getOriginalFilename()));
-
--------------------------------
-
-
 package com.bank.entity;
 
 import jakarta.persistence.*;
@@ -280,51 +22,20 @@ public class Application {
     private String cardType;
 
     @Lob
-    @Column(name = "id_proof", columnDefinition = "BYTEA")
+    @Column(name = "id_proof")
     private byte[] idProof;
 
     @Lob
-    @Column(name = "pan_card", columnDefinition = "BYTEA")
+    @Column(name = "pan_card")
     private byte[] panCard;
 
     @Lob
-    @Column(name = "photo", columnDefinition = "BYTEA")
+    @Column(name = "photo")
     private byte[] photo;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    // ✅ Getters & Setters (all explicit)
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getUserid() { return userid; }
-    public void setUserid(String userid) { this.userid = userid; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public String getMobile() { return mobile; }
-    public void setMobile(String mobile) { this.mobile = mobile; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPan() { return pan; }
-    public void setPan(String pan) { this.pan = pan; }
-
-    public String getDob() { return dob; }
-    public void setDob(String dob) { this.dob = dob; }
-
-    public String getProfession() { return profession; }
-    public void setProfession(String profession) { this.profession = profession; }
-
-    public String getCardType() { return cardType; }
-    public void setCardType(String cardType) { this.cardType = cardType; }
-
+    // --- Getters and Setters ---
     public byte[] getIdProof() { return idProof; }
     public void setIdProof(byte[] idProof) { this.idProof = idProof; }
 
@@ -334,15 +45,12 @@ public class Application {
     public byte[] getPhoto() { return photo; }
     public void setPhoto(byte[] photo) { this.photo = photo; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    // + all other getters/setters (userid, name, etc.)
 }
--------------------------------------------------------------
 
-
-
-@PostMapping
-public ResponseEntity<?> saveApplication(
+-----------------------------------------------------------
+@PostMapping(consumes = {"multipart/form-data"})
+public String saveApplication(
         @RequestParam("userid") String userid,
         @RequestParam("name") String name,
         @RequestParam("address") String address,
@@ -357,21 +65,6 @@ public ResponseEntity<?> saveApplication(
         @RequestParam(value = "photo", required = false) MultipartFile photo
 ) {
     try {
-        // ✅ Save directly to Desktop "uploads" folder
-        String desktopPath = System.getProperty("user.home") + "/Desktop/uploads/";
-        File directory = new File(desktopPath);
-        if (!directory.exists()) directory.mkdirs();  // create folder if not exists
-
-        if (idProof != null && !idProof.isEmpty())
-            idProof.transferTo(new File(desktopPath + idProof.getOriginalFilename()));
-
-        if (panCard != null && !panCard.isEmpty())
-            panCard.transferTo(new File(desktopPath + panCard.getOriginalFilename()));
-
-        if (photo != null && !photo.isEmpty())
-            photo.transferTo(new File(desktopPath + photo.getOriginalFilename()));
-
-        // ✅ Save data to DB
         Application app = new Application();
         app.setUserid(userid);
         app.setName(name);
@@ -382,126 +75,28 @@ public ResponseEntity<?> saveApplication(
         app.setDob(dob);
         app.setProfession(profession);
         app.setCardType(cardType);
+        app.setCreatedAt(LocalDateTime.now());
+
+        // Save file bytes directly into DB
+        if (idProof != null && !idProof.isEmpty()) {
+            app.setIdProof(idProof.getBytes());
+        }
+
+        if (panCard != null && !panCard.isEmpty()) {
+            app.setPanCard(panCard.getBytes());
+        }
+
+        if (photo != null && !photo.isEmpty()) {
+            app.setPhoto(photo.getBytes());
+        }
 
         applicationRepository.save(app);
+        return "✅ Files saved directly to PostgreSQL.";
 
-        return ResponseEntity.ok("✅ Application saved successfully! Files stored on Desktop.");
-    } catch (IOException e) {
+    } catch (Exception e) {
         e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("❌ File upload failed: " + e.getMessage());
+        return "❌ Upload failed: " + e.getMessage();
     }
 }
-
-
--------------------------
-
-
-package com.bank.controller;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.bank.entity.Application;
-import com.bank.repository.ApplicationRepository;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDateTime;
-
-@RestController
-@RequestMapping("/api/applications")
-@CrossOrigin(origins = "http://localhost:3000")
-public class ApplicationController {
-
-    @Autowired
-    private ApplicationRepository applicationRepository;
-
-    // Automatically detect user's Desktop folder
-    private static final String UPLOAD_DIR = System.getProperty("user.home") + File.separator + "Desktop" 
-                                             + File.separator + "Uploaded_Files" + File.separator;
-
-    // This block will auto-create the folder at app startup
-    static {
-        try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-            System.out.println("✅ Upload folder ready at: " + UPLOAD_DIR);
-        } catch (IOException e) {
-            System.err.println("❌ Failed to create upload directory: " + e.getMessage());
-        }
-    }
-
-    @PostMapping(consumes = {"multipart/form-data"})
-    public String saveApplication(
-            @RequestParam("userid") String userid,
-            @RequestParam("name") String name,
-            @RequestParam("address") String address,
-            @RequestParam("mobile") String mobile,
-            @RequestParam("email") String email,
-            @RequestParam("pan") String pan,
-            @RequestParam("dob") String dob,
-            @RequestParam("profession") String profession,
-            @RequestParam("cardType") String cardType,
-            @RequestParam(value = "idProof", required = false) MultipartFile idProof,
-            @RequestParam(value = "panCard", required = false) MultipartFile panCard,
-            @RequestParam(value = "photo", required = false) MultipartFile photo
-    ) {
-        try {
-            Application app = new Application();
-            app.setUserid(userid);
-            app.setName(name);
-            app.setAddress(address);
-            app.setMobile(mobile);
-            app.setEmail(email);
-            app.setPan(pan);
-            app.setDob(dob);
-            app.setProfession(profession);
-            app.setCardType(cardType);
-            app.setCreatedAt(LocalDateTime.now());
-
-            // Save uploaded files to Desktop
-            if (idProof != null && !idProof.isEmpty()) {
-                String idProofPath = saveFile(idProof);
-                app.setIdProofPath(idProofPath);
-            }
-
-            if (panCard != null && !panCard.isEmpty()) {
-                String panCardPath = saveFile(panCard);
-                app.setPanCardPath(panCardPath);
-            }
-
-            if (photo != null && !photo.isEmpty()) {
-                String photoPath = saveFile(photo);
-                app.setPhotoPath(photoPath);
-            }
-
-            applicationRepository.save(app);
-            return "✅ Application uploaded successfully! Files saved to Desktop.";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "❌ Upload failed: " + e.getMessage();
-        }
-    }
-
-    private String saveFile(MultipartFile file) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = Paths.get(UPLOAD_DIR + fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        return filePath.toString();
-    }
-}
---------------------
-@Lob
-@Column(name = "id_proof_path")
-private String idProofPath;
-
-@Lob
-@Column(name = "pan_card_path")
-private String panCardPath;
-
-@Lob
-@Column(name = "photo_path")
-private String photoPath;
+--------------------------------------------------
 

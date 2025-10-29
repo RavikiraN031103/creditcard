@@ -100,3 +100,38 @@ public String saveApplication(
 }
 --------------------------------------------------
 
+
+@GetMapping("/file/{id}/{type}")
+public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable String type) {
+    Application app = applicationRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Application not found"));
+
+    byte[] data = null;
+    String filename = "";
+
+    switch (type.toLowerCase()) {
+        case "idproof":
+            data = app.getIdProof();
+            filename = "idproof";
+            break;
+        case "pancard":
+            data = app.getPanCard();
+            filename = "pancard";
+            break;
+        case "photo":
+            data = app.getPhoto();
+            filename = "photo";
+            break;
+        default:
+            return ResponseEntity.badRequest().build();
+    }
+
+    if (data == null) return ResponseEntity.notFound().build();
+
+    return ResponseEntity.ok()
+            .header("Content-Type", "application/octet-stream")
+            .header("Content-Disposition", "inline; filename=" + filename)
+            .body(data);
+}
+
+

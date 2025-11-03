@@ -134,8 +134,21 @@ public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable Strin
             .body(data);
 }
 -----------------------------------------------------------------------
+const validateStep1 = () => {
+    const nameRegex = /^[A-Za-z ]+$/;
+    const mobileRegex = /^\d{10}$/;
+    const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
+    const panRegex = /^[A-Za-z0-9]+$/;
 
- if(!form.dob){
+    if(!form.userid){alert('User ID is required'); return false;}
+    if(!form.name || !nameRegex.test(form.name)){alert('Full name should contain only alphabets'); return false;}
+    if(!form.address || !addressRegex.test(form.address)){alert('Address should contain only alphabets, numbers, commas, or periods'); return false;}
+    if(!mobileRegex.test(form.mobile)){alert('Mobile number should contain exactly 10 digits'); return false;}
+    if(!form.email.includes('@')){alert('Enter a valid email'); return false;}
+    if(!form.pan || !panRegex.test(form.pan)){alert('PAN should contain only alphabets and numbers'); return false;}
+
+    // ✅ Date of Birth validation (must be >= 18 years)
+    if(!form.dob){
         alert('Date of Birth is required');
         return false;
     }
@@ -148,6 +161,9 @@ public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable Strin
         alert('You must be 18 years or older');
         return false;
     }
+
+    return true;
+};
 
 -----------
 <input 

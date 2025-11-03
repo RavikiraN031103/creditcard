@@ -135,45 +135,40 @@ public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable Strin
 }
 -----------------------------------------------------------------------
 const validateStep1 = () => {
+  let e = {};
   const nameRegex = /^[A-Za-z ]+$/;
   const mobileRegex = /^\d{10}$/;
   const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
   const panRegex = /^[A-Za-z0-9]+$/;
 
-  if(!form.userid){setError('User ID is required'); return false;}
-  if(!form.name || !nameRegex.test(form.name)){setError('Full name should contain only alphabets'); return false;}
-  if(!form.address || !addressRegex.test(form.address)){setError('Address should contain only alphabets, numbers, commas, or periods'); return false;}
-  if(!mobileRegex.test(form.mobile)){setError('Mobile number should contain exactly 10 digits'); return false;}
-  if(!form.email.includes('@')){setError('Enter a valid email'); return false;}
-  if(!form.pan || !panRegex.test(form.pan)){setError('PAN should contain only alphabets and numbers'); return false;}
+  if(!form.userid) e.userid = 'User ID is required';
+  if(!form.name || !nameRegex.test(form.name)) e.name = 'Full name should contain only alphabets';
+  if(!form.address || !addressRegex.test(form.address)) e.address = 'Address must contain only alphabets, numbers, commas, or periods';
+  if(!mobileRegex.test(form.mobile)) e.mobile = 'Mobile number must be exactly 10 digits';
+  if(!form.email.includes('@')) e.email = 'Enter a valid email';
+  if(!form.pan || !panRegex.test(form.pan)) e.pan = 'PAN must contain only letters and numbers';
 
-  // ✅ DOB validation
-  if(!form.dob){setError('Date of Birth is required'); return false;}
-  const birthDate = new Date(form.dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const month = today.getMonth() - birthDate.getMonth();
-  if(month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) age--;
-  if(age < 18){setError('You must be 18 years or older'); return false;}
+  // ✅ DOB validation (>= 18 years)
+  if(!form.dob) {
+    e.dob = 'Date of Birth is required';
+  } else {
+    const birthDate = new Date(form.dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+    if(month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) age--;
+    if(age < 18) e.dob = 'You must be 18 years or older';
+  }
 
-  setError('');
-  return true;
+  setErrors(e);
+  return Object.keys(e).length === 0;
 };
 
-
-
-
-
-<form className="form">
-  <h2>Application Form — Step {step} of 3</h2>
-
-  {error && <p style={{color: 'red'}}>{error}</p>}
------------
-<input 
-  type="date"
-  value={form.dob}
-  max={new Date(Date.now() - 568025136000).toISOString().slice(0,10)} 
-  onChange={e=>setForm({...form, dob:e.target.value})}
-/>
+---------
+<label>
+  User ID
+  <input value={form.userid} onChange={e=>setForm({...form, userid:e.target.value})}/>
+  {errors.userid && <div className="error-text">{errors.userid}</div>}
+</label>
 
 

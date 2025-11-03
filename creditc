@@ -133,5 +133,41 @@ public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable Strin
             .header("Content-Disposition", "inline; filename=" + filename)
             .body(data);
 }
+-----------------------------------------------------------------------
+
+const validate = () => {
+  const e = {};
+
+  if (!form.name) e.name = 'Full name is required';
+  if (form.mobile && !/^\d{10}$/.test(form.mobile)) e.mobile = 'Enter valid 10-digit number';
+
+  // ✅ DOB Validation (must be >= 18 years)
+  if (!form.dob) {
+    e.dob = 'Date of Birth is required';
+  } else {
+    const birthDate = new Date(form.dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 18) e.dob = 'You must be 18 years or older';
+  }
+
+  return e;
+};
+-----------
+
+<label>Date of Birth
+  <input
+    type="date"
+    value={form.dob}
+    onChange={(e) => setForm({...form, dob: e.target.value})}
+  />
+  {errors.dob && <small style={{color: "red"}}>{errors.dob}</small>}
+</label>
+
 
 

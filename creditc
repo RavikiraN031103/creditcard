@@ -135,36 +135,39 @@ public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable Strin
 }
 -----------------------------------------------------------------------
 const validateStep1 = () => {
-    const nameRegex = /^[A-Za-z ]+$/;
-    const mobileRegex = /^\d{10}$/;
-    const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
-    const panRegex = /^[A-Za-z0-9]+$/;
+  const nameRegex = /^[A-Za-z ]+$/;
+  const mobileRegex = /^\d{10}$/;
+  const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
+  const panRegex = /^[A-Za-z0-9]+$/;
 
-    if(!form.userid){alert('User ID is required'); return false;}
-    if(!form.name || !nameRegex.test(form.name)){alert('Full name should contain only alphabets'); return false;}
-    if(!form.address || !addressRegex.test(form.address)){alert('Address should contain only alphabets, numbers, commas, or periods'); return false;}
-    if(!mobileRegex.test(form.mobile)){alert('Mobile number should contain exactly 10 digits'); return false;}
-    if(!form.email.includes('@')){alert('Enter a valid email'); return false;}
-    if(!form.pan || !panRegex.test(form.pan)){alert('PAN should contain only alphabets and numbers'); return false;}
+  if(!form.userid){setError('User ID is required'); return false;}
+  if(!form.name || !nameRegex.test(form.name)){setError('Full name should contain only alphabets'); return false;}
+  if(!form.address || !addressRegex.test(form.address)){setError('Address should contain only alphabets, numbers, commas, or periods'); return false;}
+  if(!mobileRegex.test(form.mobile)){setError('Mobile number should contain exactly 10 digits'); return false;}
+  if(!form.email.includes('@')){setError('Enter a valid email'); return false;}
+  if(!form.pan || !panRegex.test(form.pan)){setError('PAN should contain only alphabets and numbers'); return false;}
 
-    // ✅ Date of Birth validation (must be >= 18 years)
-    if(!form.dob){
-        alert('Date of Birth is required');
-        return false;
-    }
-    const birthDate = new Date(form.dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const month = today.getMonth() - birthDate.getMonth();
-    if(month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) age--;
-    if(age < 18){
-        alert('You must be 18 years or older');
-        return false;
-    }
+  // ✅ DOB validation
+  if(!form.dob){setError('Date of Birth is required'); return false;}
+  const birthDate = new Date(form.dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const month = today.getMonth() - birthDate.getMonth();
+  if(month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) age--;
+  if(age < 18){setError('You must be 18 years or older'); return false;}
 
-    return true;
+  setError('');
+  return true;
 };
 
+
+
+
+
+<form className="form">
+  <h2>Application Form — Step {step} of 3</h2>
+
+  {error && <p style={{color: 'red'}}>{error}</p>}
 -----------
 <input 
   type="date"

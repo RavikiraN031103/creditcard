@@ -1,330 +1,3 @@
-/* ---------------------------------
-   SIMBA EVENTS AUTH THEME
------------------------------------ */
-
-:root {
-  --primary-color: #7A4F3E;
-  --accent-color: #FFA726;
-  --secondary-color: #88024F;
-  --background-color: #F5F5BC;
-  --text-color: #333333;
-}
-
-/* Page layout */
-.auth-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: var(--background-color);
-  font-family: "Poppins", sans-serif;
-  color: var(--text-color);
-}
-
-/* Card */
-.auth-card {
-  background-color: #fff;
-  width: 380px;
-  padding: 2.5rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
-}
-
-.auth-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Headings */
-.auth-card h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-/* Input fields */
-.auth-card input,
-.auth-card select {
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  outline: none;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.auth-card input:focus,
-.auth-card select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 6px rgba(255, 167, 38, 0.4);
-}
-
-/* Buttons */
-.auth-card button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  background-color: var(--primary-color);
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.auth-card button:hover {
-  background-color: var(--accent-color);
-}
-
-/* Error message */
-.auth-error {
-  color: var(--secondary-color);
-  background-color: rgba(255, 0, 0, 0.05);
-  border-left: 3px solid var(--secondary-color);
-  padding: 8px 10px;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-/* Links */
-.auth-card a {
-  color: var(--secondary-color);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.auth-card a:hover {
-  color: var(--accent-color);
-  text-decoration: underline;
-}
-
-/* Labels */
-.auth-card label {
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.3rem;
-  text-align: left;
-}
-
-/* Text below form */
-.auth-footer-text {
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 500px) {
-  .auth-card {
-    width: 90%;
-    padding: 2rem 1.5rem;
-  }
-}
-
-
------------------------
-
-import React, { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../AuthContext";
-import { useNavigate, Link } from "react-router-dom";
-import "../styles/auth.css";
-
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [error, setError] = useState("");
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const response = await axios.post(
-        "https://localhost:7283/api/Users/login",
-        { email, password }
-      );
-
-      const { token, role, userId } = response.data;
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("role", role);
-      localStorage.setItem("authToken", token);
-      login(token, role, userId);
-
-      alert("Login successful!");
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      setError("Login failed. Check your email or password.");
-    }
-  };
-
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Login to SIMBA Events</h2>
-        {error && <div className="auth-error">{error}</div>}
-
-        <form onSubmit={handleLogin}>
-          <label>Email Address</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <button type="submit">Login</button>
-        </form>
-
-        <p className="auth-footer-text">
-          Don’t have an account?{" "}
-          <Link to="/signup">Create one</Link>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default Login;
--------------------------------------------------
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import "../styles/auth.css";
-
-const Signup = () => {
-  const navigate = useNavigate();
-
-  const [userName, setUserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("User");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [location, setLocation] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    if (!userName || !email || !password || !phoneNumber || !location) {
-      setError("Please fill out all required fields.");
-      return;
-    }
-
-    const dataToSend = {
-      userName,
-      email,
-      password,
-      role,
-      phoneNumber: parseInt(phoneNumber, 10),
-      location,
-    };
-
-    try {
-      await axios.post("https://localhost:7283/api/Users/register", dataToSend);
-      alert("Registration successful! Please log in.");
-      navigate("/login");
-    } catch (err) {
-      if (err.response && err.response.data) {
-        if (err.response.data.error) setError(err.response.data.error);
-        else if (err.response.data.errors) {
-          const firstError = Object.values(err.response.data.errors)[0];
-          setError(firstError[0]);
-        } else setError("Registration failed. Please try again.");
-      } else setError("Network error. Please check your connection.");
-    }
-  };
-
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Create Your Account</h2>
-        {error && <div className="auth-error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <label>Full Name</label>
-          <input
-            type="text"
-            placeholder="Enter your name"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            required
-          />
-
-          <label>Email Address</label>
-          <input
-            type="email"
-            placeholder="you@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Create a strong password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <label>Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="User">User</option>
-            <option value="Organiser">Organiser</option>
-          </select>
-
-          <label>Phone Number</label>
-          <input
-            type="tel"
-            placeholder="10 digits"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            required
-          />
-
-          <label>Location</label>
-          <input
-            type="text"
-            placeholder="City or area"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            required
-          />
-
-          <button type="submit">Create Account</button>
-        </form>
-
-        <p className="auth-footer-text">
-          Already have an account?{" "}
-          <Link to="/login">Login here</Link>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default Signup;
---------------------------------
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../AuthContext";
@@ -333,39 +6,41 @@ import "../styles/Login.css";
 import "../styles/Modal.css";
 
 const Login = () => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // LOGIN SUBMIT HANDLER
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  // States for modal visibility
+  const [modalType, setModalType] = useState(""); // "userLogin", "adminLogin", "userSignup", "adminSignup"
+  const [error, setError] = useState("");
+
+  // Form fields
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userName, setUserName] = useState("");
+  const [role, setRole] = useState("User");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [location, setLocation] = useState("");
+
+  // API handlers
+  const handleLogin = async (endpoint) => {
     try {
-      const response = await axios.post("https://localhost:7283/api/Users/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(endpoint, { email, password });
       const { token, role, userId } = response.data;
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("role", role);
+
       localStorage.setItem("authToken", token);
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", userId);
+
       login(token, role, userId);
       alert("Login successful!");
-      setShowLogin(false);
+      setModalType("");
       navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      setError("Login failed. Check your email or password.");
+    } catch {
+      setError("Login failed. Check your credentials.");
     }
   };
 
-  // SIGNUP SUBMIT HANDLER
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError("");
+  const handleSignup = async (endpoint) => {
     try {
       const dataToSend = {
         userName,
@@ -375,50 +50,62 @@ const Login = () => {
         phoneNumber: parseInt(phoneNumber, 10),
         location,
       };
-      await axios.post("https://localhost:7283/api/Users/register", dataToSend);
+      await axios.post(endpoint, dataToSend);
       alert("Signup successful! Please login.");
-      setShowSignup(false);
-    } catch (err) {
-      console.error(err);
-      setError("Signup failed. Try again.");
+      setModalType("");
+    } catch {
+      setError("Signup failed. Please try again.");
     }
   };
-
-  // FORM STATES
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [userName, setUserName] = useState("");
-  const [role, setRole] = useState("User");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [location, setLocation] = useState("");
 
   return (
     <div className="login-landing">
       <h1>
         Welcome to <span>SIMBA Events</span>
       </h1>
-      <p>Join us to explore, attend, and host amazing events seamlessly.</p>
+      <p>Connect, collaborate, and create experiences with SIMBA.</p>
 
       <div className="landing-buttons">
-        <button className="btn btn-primary" onClick={() => setShowLogin(true)}>
-          Login
+        <button className="btn btn-user" onClick={() => setModalType("userLogin")}>
+          User Login
         </button>
-        <button className="btn btn-outline" onClick={() => setShowSignup(true)}>
-          Signup
+        <button className="btn btn-admin" onClick={() => setModalType("adminLogin")}>
+          Admin Login
+        </button>
+        <button className="btn btn-user" onClick={() => setModalType("userSignup")}>
+          User Signup
+        </button>
+        <button className="btn btn-admin" onClick={() => setModalType("adminSignup")}>
+          Admin Signup
         </button>
       </div>
 
-      {/* LOGIN MODAL */}
-      {showLogin && (
+      {/* LOGIN + SIGNUP MODALS */}
+      {modalType.includes("Login") && (
         <div className="modal-overlay">
-          <div className="modal-card">
-            <button className="close-btn" onClick={() => setShowLogin(false)}>
+          <div
+            className={`modal-card ${
+              modalType.startsWith("user") ? "modal-user" : "modal-admin"
+            }`}
+          >
+            <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>Login</h2>
+            <h2>
+              {modalType.startsWith("user") ? "User Login" : "Admin Login"}
+            </h2>
             {error && <div className="error-box">{error}</div>}
 
-            <form className="modal-form" onSubmit={handleLogin}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin(
+                  modalType.startsWith("user")
+                    ? "https://localhost:7283/api/Users/login"
+                    : "https://localhost:7283/api/Admin/login"
+                );
+              }}
+            >
               <input
                 type="email"
                 placeholder="Email address"
@@ -439,17 +126,31 @@ const Login = () => {
         </div>
       )}
 
-      {/* SIGNUP MODAL */}
-      {showSignup && (
+      {modalType.includes("Signup") && (
         <div className="modal-overlay">
-          <div className="modal-card">
-            <button className="close-btn" onClick={() => setShowSignup(false)}>
+          <div
+            className={`modal-card ${
+              modalType.startsWith("user") ? "modal-user" : "modal-admin"
+            }`}
+          >
+            <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>Signup</h2>
+            <h2>
+              {modalType.startsWith("user") ? "User Signup" : "Admin Signup"}
+            </h2>
             {error && <div className="error-box">{error}</div>}
 
-            <form className="modal-form" onSubmit={handleSignup}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSignup(
+                  modalType.startsWith("user")
+                    ? "https://localhost:7283/api/Users/register"
+                    : "https://localhost:7283/api/Admin/register"
+                );
+              }}
+            >
               <input
                 type="text"
                 placeholder="Full Name"
@@ -471,10 +172,6 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="User">User</option>
-                <option value="Organiser">Organiser</option>
-              </select>
               <input
                 type="tel"
                 placeholder="Phone Number"
@@ -499,16 +196,17 @@ const Login = () => {
 };
 
 export default Login;
-----------------------
+-----------------------------
 :root {
   --primary-color: #7a4f3e;
   --accent-color: #ffa726;
   --secondary-color: #88024f;
   --background-color: #f5f5bc;
   --text-color: #333333;
+  --admin-color: #4b145e; /* purple tone for admin theme */
 }
 
-/* Main Landing Container */
+/* Landing Layout */
 .login-landing {
   display: flex;
   flex-direction: column;
@@ -523,7 +221,7 @@ export default Login;
 
 .login-landing h1 {
   color: var(--primary-color);
-  font-size: 2.3rem;
+  font-size: 2.4rem;
   margin-bottom: 0.5rem;
 }
 
@@ -532,81 +230,93 @@ export default Login;
 }
 
 .login-landing p {
-  font-size: 1rem;
   color: var(--text-color);
-  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
 }
 
-/* Buttons */
+/* Buttons Layout */
 .landing-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
   gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  width: 320px;
 }
 
 .btn {
-  padding: 12px 30px;
+  padding: 12px 24px;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
+  border: none;
   transition: all 0.3s ease;
+  font-weight: 500;
 }
 
-.btn-primary {
+/* User Buttons */
+.btn-user {
   background-color: var(--primary-color);
   color: #fff;
-  border: none;
 }
-
-.btn-primary:hover {
+.btn-user:hover {
   background-color: var(--accent-color);
 }
 
-.btn-outline {
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-  background-color: transparent;
-}
-
-.btn-outline:hover {
-  background-color: var(--primary-color);
+/* Admin Buttons */
+.btn-admin {
+  background-color: var(--admin-color);
   color: #fff;
 }
+.btn-admin:hover {
+  background-color: var(--accent-color);
+}
 
-/* Form inside modal */
-.modal-form {
+@media (max-width: 480px) {
+  .landing-buttons {
+    grid-template-columns: 1fr;
+    width: 90%;
+  }
+}
+----------------------------
+:root {
+  --primary-color: #7a4f3e;
+  --accent-color: #ffa726;
+  --secondary-color: #88024f;
+  --admin-color: #4b145e;
+}
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.modal-form input,
-.modal-form select {
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.3s;
+/* Modal Card */
+.modal-card {
+  background-color: #fff;
+  width: 400px;
+  padding: 2.2rem;
+  border-radius: 14px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  position: relative;
+  animation: popup 0.3s ease;
 }
 
-.modal-form input:focus,
-.modal-form select:focus {
-  border-color: var(--accent-color);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Error message */
-.error-box {
-  color: var(--secondary-color);
-  background-color: rgba(255, 0, 0, 0.05);
-  border-left: 3px solid var(--secondary-color);
-  padding: 8px 10px;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
+@keyframes popup {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 /* Close Button */
@@ -621,78 +331,61 @@ export default Login;
   cursor: pointer;
   transition: color 0.3s;
 }
-
 .close-btn:hover {
   color: var(--accent-color);
 }
------------------------------------------
-:root {
-  --primary-color: #7a4f3e;
-  --accent-color: #ffa726;
-  --text-color: #333333;
+
+/* Inputs */
+.modal-card input,
+.modal-card select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.modal-card input:focus,
+.modal-card select:focus {
+  border-color: var(--accent-color);
 }
 
-/* Overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Card */
-.modal-card {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
-  width: 380px;
-  text-align: center;
-  position: relative;
-  animation: popup 0.3s ease;
-}
-
-.modal-card h2 {
-  color: var(--primary-color);
-  margin-bottom: 1.2rem;
-  font-weight: 600;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes popup {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* Button in modal */
+/* Submit Button */
 .modal-card button {
   width: 100%;
   padding: 12px;
   border-radius: 6px;
-  background-color: var(--primary-color);
   color: white;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
-.modal-card button:hover {
+/* Themed Buttons */
+.modal-user button {
+  background-color: var(--primary-color);
+}
+.modal-user button:hover {
   background-color: var(--accent-color);
 }
 
-@media (max-width: 500px) {
-  .modal-card {
-    width: 90%;
-    padding: 1.8rem;
-  }
+.modal-admin button {
+  background-color: var(--admin-color);
+}
+.modal-admin button:hover {
+  background-color: var(--accent-color);
 }
 
+/* Error box */
+.error-box {
+  color: var(--secondary-color);
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 3px solid var(--secondary-color);
+  padding: 8px 10px;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}

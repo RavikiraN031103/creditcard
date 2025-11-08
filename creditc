@@ -9,28 +9,34 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // State management
-  const [modalType, setModalType] = useState(""); // "userLogin", "adminLogin", "userSignup", "adminSignup"
+  // Modal state
+  const [modalType, setModalType] = useState(""); // "login" or "signup"
   const [error, setError] = useState("");
 
+  // Form states
+  const [role, setRole] = useState("User");
+  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userName, setUserName] = useState("");
-  const [role, setRole] = useState("User");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("");
 
-  // Login & Signup handlers
-  const handleLogin = async (endpoint) => {
+  // Login
+  const handleLogin = async () => {
     try {
+      const endpoint =
+        role === "User"
+          ? "https://localhost:7283/api/Users/login"
+          : "https://localhost:7283/api/Admin/login";
+
       const response = await axios.post(endpoint, { email, password });
-      const { token, role, userId } = response.data;
+      const { token, role: userRole, userId } = response.data;
 
       localStorage.setItem("authToken", token);
-      localStorage.setItem("role", role);
+      localStorage.setItem("role", userRole);
       localStorage.setItem("userId", userId);
 
-      login(token, role, userId);
+      login(token, userRole, userId);
       alert("Login successful!");
       setModalType("");
       navigate("/dashboard");
@@ -39,8 +45,14 @@ const Login = () => {
     }
   };
 
-  const handleSignup = async (endpoint) => {
+  // Signup
+  const handleSignup = async () => {
     try {
+      const endpoint =
+        role === "User"
+          ? "https://localhost:7283/api/Users/register"
+          : "https://localhost:7283/api/Admin/register";
+
       const dataToSend = {
         userName,
         email,
@@ -64,50 +76,44 @@ const Login = () => {
           Welcome to <span>SIMBA Events</span>
         </h1>
         <p>
-          Explore, manage, and create unforgettable experiences with our event platform.
+          Manage, explore, and create amazing experiences with a single platform
+          for users and organisers.
         </p>
 
         <div className="landing-buttons">
-          <button className="btn btn-user" onClick={() => setModalType("userLogin")}>
-            User Login
+          <button className="btn btn-user" onClick={() => setModalType("login")}>
+            Login
           </button>
-          <button className="btn btn-admin" onClick={() => setModalType("adminLogin")}>
-            Admin Login
-          </button>
-          <button className="btn btn-user" onClick={() => setModalType("userSignup")}>
-            User Signup
-          </button>
-          <button className="btn btn-admin" onClick={() => setModalType("adminSignup")}>
-            Admin Signup
+          <button className="btn btn-admin" onClick={() => setModalType("signup")}>
+            Signup
           </button>
         </div>
       </div>
 
-      {/* MODALS */}
-      {modalType.includes("Login") && (
+      {/* LOGIN MODAL */}
+      {modalType === "login" && (
         <div className="modal-overlay">
-          <div
-            className={`modal-card ${
-              modalType.startsWith("user") ? "modal-user" : "modal-admin"
-            }`}
-          >
-            <div className="modal-header"></div>
+          <div className="modal-card">
             <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>{modalType.startsWith("user") ? "User Login" : "Admin Login"}</h2>
+            <h2>Login</h2>
             {error && <div className="error-box">{error}</div>}
 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleLogin(
-                  modalType.startsWith("user")
-                    ? "https://localhost:7283/api/Users/login"
-                    : "https://localhost:7283/api/Admin/login"
-                );
+                handleLogin();
               }}
             >
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <option value="User">User</option>
+                <option value="Organiser">Organiser</option>
+              </select>
               <input
                 type="email"
                 placeholder="Email address"
@@ -128,30 +134,30 @@ const Login = () => {
         </div>
       )}
 
-      {modalType.includes("Signup") && (
+      {/* SIGNUP MODAL */}
+      {modalType === "signup" && (
         <div className="modal-overlay">
-          <div
-            className={`modal-card ${
-              modalType.startsWith("user") ? "modal-user" : "modal-admin"
-            }`}
-          >
-            <div className="modal-header"></div>
+          <div className="modal-card">
             <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>{modalType.startsWith("user") ? "User Signup" : "Admin Signup"}</h2>
+            <h2>Signup</h2>
             {error && <div className="error-box">{error}</div>}
 
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleSignup(
-                  modalType.startsWith("user")
-                    ? "https://localhost:7283/api/Users/register"
-                    : "https://localhost:7283/api/Admin/register"
-                );
+                handleSignup();
               }}
             >
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                required
+              >
+                <option value="User">User</option>
+                <option value="Organiser">Organiser</option>
+              </select>
               <input
                 type="text"
                 placeholder="Full Name"
@@ -180,13 +186,17 @@ const Login = () => {
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 required
               />
-              <input
-                type="text"
-                placeholder="Location"
+              <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 required
-              />
+              >
+                <option value="">-- Select Your City --</option>
+                <option value="Amaravati">Amaravati (Andhra Pradesh)</option>
+                <option value="Itanagar">Itanagar (Arunachal Pradesh)</option>
+                <option value="Dispur">Dispur (Assam)</option>
+               
+              </select>
               <button type="submit">Signup</button>
             </form>
           </div>
@@ -197,304 +207,7 @@ const Login = () => {
 };
 
 export default Login;
----------------------------------
-
-:root {
-  --primary-color: #7a4f3e;
-  --accent-color: #ffa726;
-  --secondary-color: #88024f;
-  --admin-color: #4b145e;
-  --background-gradient: linear-gradient(135deg, #f5f5bc 0%, #ffecc7 100%);
-  --text-color: #333333;
-}
-
-/* Animated background gradient */
-.login-landing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--background-gradient);
-  font-family: "Poppins", sans-serif;
-  color: var(--text-color);
-  text-align: center;
-  overflow: hidden;
-  animation: fadeInPage 1s ease;
-}
-
-@keyframes fadeInPage {
-  from {
-    opacity: 0;
-    transform: scale(1.05);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* SIMBA Title */
-.login-landing h1 {
-  font-size: 2.6rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0.4rem;
-  letter-spacing: 1px;
-}
-
-.login-landing h1 span {
-  color: var(--accent-color);
-}
-
-.login-landing p {
-  font-size: 1.1rem;
-  margin-bottom: 3rem;
-  opacity: 0.9;
-  max-width: 550px;
-}
-
-/* Interactive Card Box */
-.welcome-box {
-  background: white;
-  padding: 3rem 3.5rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.welcome-box:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.2);
-}
-
-/* Buttons Layout */
-.landing-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(150px, 1fr));
-  gap: 1.2rem;
-  width: 100%;
-  margin-top: 1rem;
-}
-
-/* Button Styles */
-.btn {
-  padding: 12px 25px;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Button Shine Animation */
-.btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.4);
-  transform: skewX(-20deg);
-  transition: left 0.5s ease;
-}
-
-.btn:hover::after {
-  left: 120%;
-}
-
-/* User buttons */
-.btn-user {
-  background: var(--primary-color);
-  color: white;
-}
-
-.btn-user:hover {
-  background: var(--accent-color);
-  transform: scale(1.03);
-}
-
-/* Admin buttons */
-.btn-admin {
-  background: var(--admin-color);
-  color: white;
-}
-
-.btn-admin:hover {
-  background: var(--accent-color);
-  transform: scale(1.03);
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .welcome-box {
-    width: 90%;
-    padding: 2.2rem 2rem;
-  }
-
-  .landing-buttons {
-    grid-template-columns: 1fr;
-  }
-}
------------------------------
-:root {
-  --primary-color: #7a4f3e;
-  --accent-color: #ffa726;
-  --secondary-color: #88024f;
-  --admin-color: #4b145e;
-}
-
-/* Overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-/* Modal Card */
-.modal-card {
-  background-color: #ffffff;
-  width: 400px;
-  padding: 2.4rem;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-  text-align: center;
-  position: relative;
-  transform: translateY(-10px);
-  animation: slideUp 0.4s ease forwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Modal Header Bar */
-.modal-header {
-  height: 5px;
-  border-radius: 4px;
-  margin-bottom: 1.2rem;
-}
-
-.modal-user .modal-header {
-  background: var(--primary-color);
-}
-.modal-admin .modal-header {
-  background: var(--admin-color);
-}
-
-/* Close Button */
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--secondary-color);
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.close-btn:hover {
-  color: var(--accent-color);
-}
-
-/* Inputs */
-.modal-card input,
-.modal-card select {
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.modal-card input:focus,
-.modal-card select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 5px rgba(255, 167, 38, 0.5);
-}
-
-/* Submit Button */
-.modal-card button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 6px;
-  color: white;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.3s, background-color 0.3s;
-}
-
-.modal-card button:hover {
-  transform: scale(1.03);
-}
-
-/* Themed Buttons */
-.modal-user button {
-  background-color: var(--primary-color);
-}
-.modal-admin button {
-  background-color: var(--admin-color);
-}
-
-.modal-user button:hover,
-.modal-admin button:hover {
-  background-color: var(--accent-color);
-}
-
-/* Error Box */
-.error-box {
-  color: var(--secondary-color);
-  background-color: rgba(255, 0, 0, 0.05);
-  border-left: 3px solid var(--secondary-color);
-  padding: 8px 10px;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 500px) {
-  .modal-card {
-    width: 90%;
-    padding: 2rem 1.8rem;
-  }
-}
-
-
------------------------------
+-----------------------
 :root {
   --primary-color: #7a4f3e;
   --accent-color: #ffa726;
@@ -503,7 +216,7 @@ export default Login;
   --text-color: #333333;
 }
 
-/* ===== Animated Background with Parallax Zoom ===== */
+/* ===== Animated Background ===== */
 .login-landing {
   position: relative;
   display: flex;
@@ -517,7 +230,6 @@ export default Login;
   overflow: hidden;
 }
 
-/* Background Image Layer */
 .login-landing::before {
   content: "";
   position: absolute;
@@ -528,32 +240,24 @@ export default Login;
   z-index: 0;
 }
 
-/* Dark Overlay Layer for readability */
 .login-landing::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    rgba(0, 0, 0, 0.55),
-    rgba(0, 0, 0, 0.55)
-  );
+  background: rgba(0, 0, 0, 0.55);
   z-index: 1;
 }
 
-/* Zoom and slight pan animation */
 @keyframes bgZoom {
   0% {
-    transform: scale(1) translateY(0px);
-  }
-  50% {
-    transform: scale(1.08) translateY(-10px);
+    transform: scale(1);
   }
   100% {
-    transform: scale(1.12) translateY(10px);
+    transform: scale(1.1);
   }
 }
 
-/* ===== Content Section ===== */
+/* ===== Welcome Box ===== */
 .welcome-box {
   position: relative;
   z-index: 2;
@@ -579,7 +283,6 @@ export default Login;
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.6rem;
-  letter-spacing: 1px;
 }
 
 .login-landing h1 span {
@@ -594,16 +297,14 @@ export default Login;
   max-width: 500px;
 }
 
-/* ===== Buttons Layout ===== */
+/* ===== Buttons ===== */
 .landing-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(150px, 1fr));
+  display: flex;
+  justify-content: center;
   gap: 1rem;
   width: 100%;
-  margin-top: 1rem;
 }
 
-/* ===== Buttons ===== */
 .btn {
   padding: 12px 26px;
   border: none;
@@ -611,13 +312,11 @@ export default Login;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 500;
-  letter-spacing: 0.3px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
-/* Shine effect */
 .btn::after {
   content: "";
   position: absolute;
@@ -629,11 +328,12 @@ export default Login;
   transform: skewX(-20deg);
   transition: left 0.5s ease;
 }
+
 .btn:hover::after {
   left: 120%;
 }
 
-/* User Buttons */
+/* Login and Signup Buttons */
 .btn-user {
   background: var(--primary-color);
   color: #fff;
@@ -643,7 +343,6 @@ export default Login;
   transform: scale(1.05);
 }
 
-/* Admin Buttons */
 .btn-admin {
   background: var(--admin-color);
   color: #fff;
@@ -661,138 +360,146 @@ export default Login;
   }
 
   .landing-buttons {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .login-landing h1 {
     font-size: 2rem;
   }
 }
----------------------------
+------------------------------
+:root {
+  --primary-color: #7a4f3e;
+  --accent-color: #ffa726;
+  --secondary-color: #88024f;
+  --admin-color: #4b145e;
+}
 
-<div
-  className={`modal-header-bar ${
-    modalType.startsWith("user") ? "user-bar" : "admin-bar"
-  }`}
->
-  <button className="close-btn" onClick={() => setModalType("")}>
-    ×
-  </button>
-</div>
-<h2>{modalType.startsWith("user") ? "User Login" : "Admin Login"}</h2>
----------------------------
-/* ===== Modal Header Bar ===== */
-.modal-header-bar {
+/* ===== Overlay ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  height: 40px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  margin: -2.4rem -2.4rem 1.2rem -2.4rem;
-  padding: 0 1rem;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.user-bar {
-  background-color: var(--primary-color);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.admin-bar {
-  background-color: var(--admin-color);
+/* ===== Modal Card ===== */
+.modal-card {
+  position: relative;
+  background-color: #ffffff;
+  width: 400px;
+  padding: 2.4rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: slideUp 0.4s ease forwards;
 }
 
-/* ===== Close Button (Inside Header Bar) ===== */
-.close-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 1.4rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  line-height: 1;
-  margin-top: 2px;
-}
-
-.close-btn:hover {
-  color: var(--accent-color);
-  transform: scale(1.2);
-}
-
---------------------------
-<div
-  className={`modal-header-bar ${
-    modalType.startsWith("user") ? "user-bar" : "admin-bar"
-  }`}
->
-  <h2 className="modal-title">
-    {modalType.startsWith("user") ? "User Login" : "Admin Login"}
-  </h2>
-  <button className="close-btn" onClick={() => setModalType("")}>
-    ×
-  </button>
-</div>
----------------------------------------------________-
-/* ===== Modal Header Bar ===== */
-.modal-header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 50px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  margin: -2.4rem -2.4rem 1.2rem -2.4rem;
-  padding: 0 1.2rem;
-  color: #fff;
-}
-
-/* Color variations for user/admin */
-.user-bar {
-  background-color: var(--primary-color); /* brown */
-}
-
-.admin-bar {
-  background-color: var(--admin-color); /* purple */
-}
-
-/* ===== Header Title ===== */
-.modal-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: #fff;
-  margin: 0;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== Close Button ===== */
 .close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
   background: transparent;
   border: none;
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 500;
+  color: #999;
+  font-size: 1.6rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
   line-height: 1;
+  z-index: 10;
 }
 
 .close-btn:hover {
   color: var(--accent-color);
   transform: scale(1.2);
 }
------------------
-<div
-  className={`modal-header-bar ${
-    modalType.startsWith("user") ? "user-bar" : "admin-bar"
-  }`}
->
-  <h2 className="modal-title">
-    {modalType.startsWith("user") ? "User Signup" : "Admin Signup"}
-  </h2>
-  <button className="close-btn" onClick={() => setModalType("")}>
-    ×
-  </button>
-</div>
 
+/* ===== Modal Title ===== */
+.modal-card h2 {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
 
+/* ===== Inputs and Select ===== */
+.modal-card input,
+.modal-card select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.modal-card input:focus,
+.modal-card select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 5px rgba(255, 167, 38, 0.5);
+}
+
+/* ===== Buttons ===== */
+.modal-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s, background-color 0.3s;
+  background-color: var(--primary-color);
+}
+
+.modal-card button:hover {
+  background-color: var(--accent-color);
+  transform: scale(1.05);
+}
+
+/* ===== Error Box ===== */
+.error-box {
+  color: var(--secondary-color);
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 3px solid var(--secondary-color);
+  padding: 8px 10px;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* ===== Responsive Modal ===== */
+@media (max-width: 500px) {
+  .modal-card {
+    width: 90%;
+    padding: 2rem;
+  }
+}
 

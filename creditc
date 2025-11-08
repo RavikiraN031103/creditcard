@@ -9,11 +9,11 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Modal state
+  // Modal states
   const [modalType, setModalType] = useState(""); // "login" or "signup"
   const [error, setError] = useState("");
 
-  // Form states
+  // Form data
   const [role, setRole] = useState("User");
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,6 +61,7 @@ const Login = () => {
         phoneNumber: parseInt(phoneNumber, 10),
         location,
       };
+
       await axios.post(endpoint, dataToSend);
       alert("Signup successful! Please login.");
       setModalType("");
@@ -195,6 +196,12 @@ const Login = () => {
                 <option value="Amaravati">Amaravati (Andhra Pradesh)</option>
                 <option value="Itanagar">Itanagar (Arunachal Pradesh)</option>
                 <option value="Dispur">Dispur (Assam)</option>
+                <option value="Patna">Patna (Bihar)</option>
+                <option value="Raipur">Raipur (Chhattisgarh)</option>
+                <option value="Panaji">Panaji (Goa)</option>
+                <option value="Gandhinagar">Gandhinagar (Gujarat)</option>
+                <option value="Shimla">Shimla (Himachal Pradesh)</option>
+                <option value="Ranchi">Ranchi (Jharkhand)</option>
                
               </select>
               <button type="submit">Signup</button>
@@ -207,172 +214,13 @@ const Login = () => {
 };
 
 export default Login;
------------------------
+
+
+---------------------
 :root {
   --primary-color: #7a4f3e;
   --accent-color: #ffa726;
   --secondary-color: #88024f;
-  --admin-color: #4b145e;
-  --text-color: #333333;
-}
-
-/* ===== Animated Background ===== */
-.login-landing {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  font-family: "Poppins", sans-serif;
-  color: #fff;
-  text-align: center;
-  overflow: hidden;
-}
-
-.login-landing::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("../assets/simba-bg.jpg") center/cover no-repeat;
-  transform: scale(1);
-  animation: bgZoom 20s ease-in-out infinite alternate;
-  z-index: 0;
-}
-
-.login-landing::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 1;
-}
-
-@keyframes bgZoom {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.1);
-  }
-}
-
-/* ===== Welcome Box ===== */
-.welcome-box {
-  position: relative;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 3rem 3.5rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  max-width: 450px;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-}
-
-.welcome-box:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-}
-
-/* ===== Headings ===== */
-.login-landing h1 {
-  font-size: 2.6rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 0.6rem;
-}
-
-.login-landing h1 span {
-  color: var(--accent-color);
-}
-
-.login-landing p {
-  font-size: 1.1rem;
-  color: #f8f8f8;
-  margin-bottom: 2.5rem;
-  opacity: 0.95;
-  max-width: 500px;
-}
-
-/* ===== Buttons ===== */
-.landing-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.btn {
-  padding: 12px 26px;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.4);
-  transform: skewX(-20deg);
-  transition: left 0.5s ease;
-}
-
-.btn:hover::after {
-  left: 120%;
-}
-
-/* Login and Signup Buttons */
-.btn-user {
-  background: var(--primary-color);
-  color: #fff;
-}
-.btn-user:hover {
-  background: var(--accent-color);
-  transform: scale(1.05);
-}
-
-.btn-admin {
-  background: var(--admin-color);
-  color: #fff;
-}
-.btn-admin:hover {
-  background: var(--accent-color);
-  transform: scale(1.05);
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .welcome-box {
-    width: 90%;
-    padding: 2.2rem 2rem;
-  }
-
-  .landing-buttons {
-    flex-direction: column;
-  }
-
-  .login-landing h1 {
-    font-size: 2rem;
-  }
-}
-------------------------------
-:root {
-  --primary-color: #7a4f3e;
-  --accent-color: #ffa726;
-  --secondary-color: #88024f;
-  --admin-color: #4b145e;
 }
 
 /* ===== Overlay ===== */
@@ -422,7 +270,7 @@ export default Login;
 /* ===== Close Button ===== */
 .close-btn {
   position: absolute;
-  top: 12px;
+  top: 10px;
   right: 14px;
   background: transparent;
   border: none;
@@ -440,14 +288,15 @@ export default Login;
   transform: scale(1.2);
 }
 
-/* ===== Modal Title ===== */
+/* ===== Title ===== */
 .modal-card h2 {
   color: var(--primary-color);
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
+  margin-top: 10px;
 }
 
-/* ===== Inputs and Select ===== */
+/* ===== Inputs & Select ===== */
 .modal-card input,
 .modal-card select {
   width: 100%;
@@ -466,7 +315,7 @@ export default Login;
   box-shadow: 0 0 5px rgba(255, 167, 38, 0.5);
 }
 
-/* ===== Buttons ===== */
+/* ===== Button ===== */
 .modal-card button {
   width: 100%;
   padding: 12px;
@@ -495,7 +344,7 @@ export default Login;
   font-size: 0.9rem;
 }
 
-/* ===== Responsive Modal ===== */
+/* ===== Responsive ===== */
 @media (max-width: 500px) {
   .modal-card {
     width: 90%;

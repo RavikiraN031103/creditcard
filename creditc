@@ -324,3 +324,375 @@ const Signup = () => {
 };
 
 export default Signup;
+--------------------------------
+import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "../AuthContext";
+import { useNavigate } from "react-router-dom";
+import "../styles/Login.css";
+import "../styles/Modal.css";
+
+const Login = () => {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [error, setError] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  // LOGIN SUBMIT HANDLER
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const response = await axios.post("https://localhost:7283/api/Users/login", {
+        email,
+        password,
+      });
+      const { token, role, userId } = response.data;
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("role", role);
+      localStorage.setItem("authToken", token);
+      login(token, role, userId);
+      alert("Login successful!");
+      setShowLogin(false);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError("Login failed. Check your email or password.");
+    }
+  };
+
+  // SIGNUP SUBMIT HANDLER
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const dataToSend = {
+        userName,
+        email,
+        password,
+        role,
+        phoneNumber: parseInt(phoneNumber, 10),
+        location,
+      };
+      await axios.post("https://localhost:7283/api/Users/register", dataToSend);
+      alert("Signup successful! Please login.");
+      setShowSignup(false);
+    } catch (err) {
+      console.error(err);
+      setError("Signup failed. Try again.");
+    }
+  };
+
+  // FORM STATES
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userName, setUserName] = useState("");
+  const [role, setRole] = useState("User");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [location, setLocation] = useState("");
+
+  return (
+    <div className="login-landing">
+      <h1>
+        Welcome to <span>SIMBA Events</span>
+      </h1>
+      <p>Join us to explore, attend, and host amazing events seamlessly.</p>
+
+      <div className="landing-buttons">
+        <button className="btn btn-primary" onClick={() => setShowLogin(true)}>
+          Login
+        </button>
+        <button className="btn btn-outline" onClick={() => setShowSignup(true)}>
+          Signup
+        </button>
+      </div>
+
+      {/* LOGIN MODAL */}
+      {showLogin && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <button className="close-btn" onClick={() => setShowLogin(false)}>
+              ×
+            </button>
+            <h2>Login</h2>
+            {error && <div className="error-box">{error}</div>}
+
+            <form className="modal-form" onSubmit={handleLogin}>
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button type="submit">Login</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SIGNUP MODAL */}
+      {showSignup && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <button className="close-btn" onClick={() => setShowSignup(false)}>
+              ×
+            </button>
+            <h2>Signup</h2>
+            {error && <div className="error-box">{error}</div>}
+
+            <form className="modal-form" onSubmit={handleSignup}>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <option value="User">User</option>
+                <option value="Organiser">Organiser</option>
+              </select>
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required
+              />
+              <button type="submit">Signup</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Login;
+----------------------
+:root {
+  --primary-color: #7a4f3e;
+  --accent-color: #ffa726;
+  --secondary-color: #88024f;
+  --background-color: #f5f5bc;
+  --text-color: #333333;
+}
+
+/* Main Landing Container */
+.login-landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  padding: 20px;
+}
+
+.login-landing h1 {
+  color: var(--primary-color);
+  font-size: 2.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-landing h1 span {
+  color: var(--accent-color);
+}
+
+.login-landing p {
+  font-size: 1rem;
+  color: var(--text-color);
+  margin-bottom: 2rem;
+}
+
+/* Buttons */
+.landing-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-color);
+}
+
+.btn-outline {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* Form inside modal */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.modal-form input,
+.modal-form select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+  border-color: var(--accent-color);
+}
+
+/* Error message */
+.error-box {
+  color: var(--secondary-color);
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 3px solid var(--secondary-color);
+  padding: 8px 10px;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--secondary-color);
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: var(--accent-color);
+}
+-----------------------------------------
+:root {
+  --primary-color: #7a4f3e;
+  --accent-color: #ffa726;
+  --text-color: #333333;
+}
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Card */
+.modal-card {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  width: 380px;
+  text-align: center;
+  position: relative;
+  animation: popup 0.3s ease;
+}
+
+.modal-card h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popup {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Button in modal */
+.modal-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-card button:hover {
+  background-color: var(--accent-color);
+}
+
+@media (max-width: 500px) {
+  .modal-card {
+    width: 90%;
+    padding: 1.8rem;
+  }
+}
+

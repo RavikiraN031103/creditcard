@@ -1,174 +1,326 @@
-package com.bank.entity;
+/* ---------------------------------
+   SIMBA EVENTS AUTH THEME
+----------------------------------- */
 
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "applications")
-public class Application {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String userid;
-    private String name;
-    private String address;
-    private String mobile;
-    private String email;
-    private String pan;
-    private String dob;
-    private String profession;
-    private String cardType;
-
-    @Lob
-    @Column(name = "id_proof")
-    private byte[] idProof;
-
-    @Lob
-    @Column(name = "pan_card")
-    private byte[] panCard;
-
-    @Lob
-    @Column(name = "photo")
-    private byte[] photo;
-
-    private LocalDateTime createdAt;
-
-    // --- Getters and Setters ---
-    public byte[] getIdProof() { return idProof; }
-    public void setIdProof(byte[] idProof) { this.idProof = idProof; }
-
-    public byte[] getPanCard() { return panCard; }
-    public void setPanCard(byte[] panCard) { this.panCard = panCard; }
-
-    public byte[] getPhoto() { return photo; }
-    public void setPhoto(byte[] photo) { this.photo = photo; }
-
-    // + all other getters/setters (userid, name, etc.)
+:root {
+  --primary-color: #7A4F3E;
+  --accent-color: #FFA726;
+  --secondary-color: #88024F;
+  --background-color: #F5F5BC;
+  --text-color: #333333;
 }
 
------------------------------------------------------------
-@PostMapping(consumes = {"multipart/form-data"})
-public String saveApplication(
-        @RequestParam("userid") String userid,
-        @RequestParam("name") String name,
-        @RequestParam("address") String address,
-        @RequestParam("mobile") String mobile,
-        @RequestParam("email") String email,
-        @RequestParam("pan") String pan,
-        @RequestParam("dob") String dob,
-        @RequestParam("profession") String profession,
-        @RequestParam("cardType") String cardType,
-        @RequestParam(value = "idProof", required = false) MultipartFile idProof,
-        @RequestParam(value = "panCard", required = false) MultipartFile panCard,
-        @RequestParam(value = "photo", required = false) MultipartFile photo
-) {
-    try {
-        Application app = new Application();
-        app.setUserid(userid);
-        app.setName(name);
-        app.setAddress(address);
-        app.setMobile(mobile);
-        app.setEmail(email);
-        app.setPan(pan);
-        app.setDob(dob);
-        app.setProfession(profession);
-        app.setCardType(cardType);
-        app.setCreatedAt(LocalDateTime.now());
-
-        // Save file bytes directly into DB
-        if (idProof != null && !idProof.isEmpty()) {
-            app.setIdProof(idProof.getBytes());
-        }
-
-        if (panCard != null && !panCard.isEmpty()) {
-            app.setPanCard(panCard.getBytes());
-        }
-
-        if (photo != null && !photo.isEmpty()) {
-            app.setPhoto(photo.getBytes());
-        }
-
-        applicationRepository.save(app);
-        return "✅ Files saved directly to PostgreSQL.";
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return "❌ Upload failed: " + e.getMessage();
-    }
+/* Page layout */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  font-family: "Poppins", sans-serif;
+  color: var(--text-color);
 }
---------------------------------------------------
 
-
-@GetMapping("/file/{id}/{type}")
-public ResponseEntity<byte[]> getFile(@PathVariable Long id, @PathVariable String type) {
-    Application app = applicationRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Application not found"));
-
-    byte[] data = null;
-    String filename = "";
-
-    switch (type.toLowerCase()) {
-        case "idproof":
-            data = app.getIdProof();
-            filename = "idproof";
-            break;
-        case "pancard":
-            data = app.getPanCard();
-            filename = "pancard";
-            break;
-        case "photo":
-            data = app.getPhoto();
-            filename = "photo";
-            break;
-        default:
-            return ResponseEntity.badRequest().build();
-    }
-
-    if (data == null) return ResponseEntity.notFound().build();
-
-    return ResponseEntity.ok()
-            .header("Content-Type", "application/octet-stream")
-            .header("Content-Disposition", "inline; filename=" + filename)
-            .body(data);
+/* Card */
+.auth-card {
+  background-color: #fff;
+  width: 380px;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
 }
------------------------------------------------------------------------
-const validateStep1 = () => {
-  let e = {};
-  const nameRegex = /^[A-Za-z ]+$/;
-  const mobileRegex = /^\d{10}$/;
-  const addressRegex = /^[A-Za-z0-9 ,.-]+$/;
-  const panRegex = /^[A-Za-z0-9]+$/;
 
-  if(!form.userid) e.userid = 'User ID is required';
-  if(!form.name || !nameRegex.test(form.name)) e.name = 'Full name should contain only alphabets';
-  if(!form.address || !addressRegex.test(form.address)) e.address = 'Address must contain only alphabets, numbers, commas, or periods';
-  if(!mobileRegex.test(form.mobile)) e.mobile = 'Mobile number must be exactly 10 digits';
-  if(!form.email.includes('@')) e.email = 'Enter a valid email';
-  if(!form.pan || !panRegex.test(form.pan)) e.pan = 'PAN must contain only letters and numbers';
+.auth-card:hover {
+  transform: translateY(-5px);
+}
 
-  // ✅ DOB validation (>= 18 years)
-  if(!form.dob) {
-    e.dob = 'Date of Birth is required';
-  } else {
-    const birthDate = new Date(form.dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const month = today.getMonth() - birthDate.getMonth();
-    if(month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) age--;
-    if(age < 18) e.dob = 'You must be 18 years or older';
+/* Headings */
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Input fields */
+.auth-card input,
+.auth-card select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.auth-card input:focus,
+.auth-card select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 6px rgba(255, 167, 38, 0.4);
+}
+
+/* Buttons */
+.auth-card button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-card button:hover {
+  background-color: var(--accent-color);
+}
+
+/* Error message */
+.auth-error {
+  color: var(--secondary-color);
+  background-color: rgba(255, 0, 0, 0.05);
+  border-left: 3px solid var(--secondary-color);
+  padding: 8px 10px;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Links */
+.auth-card a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-card a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+/* Labels */
+.auth-card label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.3rem;
+  text-align: left;
+}
+
+/* Text below form */
+.auth-footer-text {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .auth-card {
+    width: 90%;
+    padding: 2rem 1.5rem;
   }
+}
 
-  setErrors(e);
-  return Object.keys(e).length === 0;
+
+-----------------------
+
+import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "../AuthContext";
+import { useNavigate, Link } from "react-router-dom";
+import "../styles/auth.css";
+
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const response = await axios.post(
+        "https://localhost:7283/api/Users/login",
+        { email, password }
+      );
+
+      const { token, role, userId } = response.data;
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("role", role);
+      localStorage.setItem("authToken", token);
+      login(token, role, userId);
+
+      alert("Login successful!");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setError("Login failed. Check your email or password.");
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Login to SIMBA Events</h2>
+        {error && <div className="auth-error">{error}</div>}
+
+        <form onSubmit={handleLogin}>
+          <label>Email Address</label>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <button type="submit">Login</button>
+        </form>
+
+        <p className="auth-footer-text">
+          Don’t have an account?{" "}
+          <Link to="/signup">Create one</Link>
+        </p>
+      </div>
+    </div>
+  );
 };
 
----------
-<label>
-  User ID
-  <input value={form.userid} onChange={e=>setForm({...form, userid:e.target.value})}/>
-  {errors.userid && <div className="error-text">{errors.userid}</div>}
-</label>
+export default Login;
+-------------------------------------------------
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import "../styles/auth.css";
 
+const Signup = () => {
+  const navigate = useNavigate();
 
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("User");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!userName || !email || !password || !phoneNumber || !location) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+
+    const dataToSend = {
+      userName,
+      email,
+      password,
+      role,
+      phoneNumber: parseInt(phoneNumber, 10),
+      location,
+    };
+
+    try {
+      await axios.post("https://localhost:7283/api/Users/register", dataToSend);
+      alert("Registration successful! Please log in.");
+      navigate("/login");
+    } catch (err) {
+      if (err.response && err.response.data) {
+        if (err.response.data.error) setError(err.response.data.error);
+        else if (err.response.data.errors) {
+          const firstError = Object.values(err.response.data.errors)[0];
+          setError(firstError[0]);
+        } else setError("Registration failed. Please try again.");
+      } else setError("Network error. Please check your connection.");
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Create Your Account</h2>
+        {error && <div className="auth-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <label>Full Name</label>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            required
+          />
+
+          <label>Email Address</label>
+          <input
+            type="email"
+            placeholder="you@gmail.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Create a strong password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <label>Role</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="User">User</option>
+            <option value="Organiser">Organiser</option>
+          </select>
+
+          <label>Phone Number</label>
+          <input
+            type="tel"
+            placeholder="10 digits"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            required
+          />
+
+          <label>Location</label>
+          <input
+            type="text"
+            placeholder="City or area"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            required
+          />
+
+          <button type="submit">Create Account</button>
+        </form>
+
+        <p className="auth-footer-text">
+          Already have an account?{" "}
+          <Link to="/login">Login here</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;

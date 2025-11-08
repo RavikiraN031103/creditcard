@@ -9,11 +9,10 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // States for modal visibility
+  // State management
   const [modalType, setModalType] = useState(""); // "userLogin", "adminLogin", "userSignup", "adminSignup"
   const [error, setError] = useState("");
 
-  // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userName, setUserName] = useState("");
@@ -21,7 +20,7 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("");
 
-  // API handlers
+  // Login & Signup handlers
   const handleLogin = async (endpoint) => {
     try {
       const response = await axios.post(endpoint, { email, password });
@@ -60,27 +59,31 @@ const Login = () => {
 
   return (
     <div className="login-landing">
-      <h1>
-        Welcome to <span>SIMBA Events</span>
-      </h1>
-      <p>Connect, collaborate, and create experiences with SIMBA.</p>
+      <div className="welcome-box">
+        <h1>
+          Welcome to <span>SIMBA Events</span>
+        </h1>
+        <p>
+          Explore, manage, and create unforgettable experiences with our event platform.
+        </p>
 
-      <div className="landing-buttons">
-        <button className="btn btn-user" onClick={() => setModalType("userLogin")}>
-          User Login
-        </button>
-        <button className="btn btn-admin" onClick={() => setModalType("adminLogin")}>
-          Admin Login
-        </button>
-        <button className="btn btn-user" onClick={() => setModalType("userSignup")}>
-          User Signup
-        </button>
-        <button className="btn btn-admin" onClick={() => setModalType("adminSignup")}>
-          Admin Signup
-        </button>
+        <div className="landing-buttons">
+          <button className="btn btn-user" onClick={() => setModalType("userLogin")}>
+            User Login
+          </button>
+          <button className="btn btn-admin" onClick={() => setModalType("adminLogin")}>
+            Admin Login
+          </button>
+          <button className="btn btn-user" onClick={() => setModalType("userSignup")}>
+            User Signup
+          </button>
+          <button className="btn btn-admin" onClick={() => setModalType("adminSignup")}>
+            Admin Signup
+          </button>
+        </div>
       </div>
 
-      {/* LOGIN + SIGNUP MODALS */}
+      {/* MODALS */}
       {modalType.includes("Login") && (
         <div className="modal-overlay">
           <div
@@ -88,12 +91,11 @@ const Login = () => {
               modalType.startsWith("user") ? "modal-user" : "modal-admin"
             }`}
           >
+            <div className="modal-header"></div>
             <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>
-              {modalType.startsWith("user") ? "User Login" : "Admin Login"}
-            </h2>
+            <h2>{modalType.startsWith("user") ? "User Login" : "Admin Login"}</h2>
             {error && <div className="error-box">{error}</div>}
 
             <form
@@ -133,12 +135,11 @@ const Login = () => {
               modalType.startsWith("user") ? "modal-user" : "modal-admin"
             }`}
           >
+            <div className="modal-header"></div>
             <button className="close-btn" onClick={() => setModalType("")}>
               ×
             </button>
-            <h2>
-              {modalType.startsWith("user") ? "User Signup" : "Admin Signup"}
-            </h2>
+            <h2>{modalType.startsWith("user") ? "User Signup" : "Admin Signup"}</h2>
             {error && <div className="error-box">{error}</div>}
 
             <form
@@ -196,33 +197,50 @@ const Login = () => {
 };
 
 export default Login;
------------------------------
+---------------------------------
+
 :root {
   --primary-color: #7a4f3e;
   --accent-color: #ffa726;
   --secondary-color: #88024f;
-  --background-color: #f5f5bc;
+  --admin-color: #4b145e;
+  --background-gradient: linear-gradient(135deg, #f5f5bc 0%, #ffecc7 100%);
   --text-color: #333333;
-  --admin-color: #4b145e; /* purple tone for admin theme */
 }
 
-/* Landing Layout */
+/* Animated background gradient */
 .login-landing {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: var(--background-color);
-  text-align: center;
+  background: var(--background-gradient);
   font-family: "Poppins", sans-serif;
-  padding: 20px;
+  color: var(--text-color);
+  text-align: center;
+  overflow: hidden;
+  animation: fadeInPage 1s ease;
 }
 
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* SIMBA Title */
 .login-landing h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
   color: var(--primary-color);
-  font-size: 2.4rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: 1px;
 }
 
 .login-landing h1 span {
@@ -230,54 +248,101 @@ export default Login;
 }
 
 .login-landing p {
-  color: var(--text-color);
   font-size: 1.1rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
+  opacity: 0.9;
+  max-width: 550px;
+}
+
+/* Interactive Card Box */
+.welcome-box {
+  background: white;
+  padding: 3rem 3.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.2);
 }
 
 /* Buttons Layout */
 .landing-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(150px, 1fr));
-  gap: 1rem;
-  width: 320px;
+  gap: 1.2rem;
+  width: 100%;
+  margin-top: 1rem;
 }
 
+/* Button Styles */
 .btn {
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
   font-size: 1rem;
   cursor: pointer;
-  border: none;
-  transition: all 0.3s ease;
   font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* User Buttons */
+/* Button Shine Animation */
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::after {
+  left: 120%;
+}
+
+/* User buttons */
 .btn-user {
-  background-color: var(--primary-color);
-  color: #fff;
+  background: var(--primary-color);
+  color: white;
 }
+
 .btn-user:hover {
-  background-color: var(--accent-color);
+  background: var(--accent-color);
+  transform: scale(1.03);
 }
 
-/* Admin Buttons */
+/* Admin buttons */
 .btn-admin {
-  background-color: var(--admin-color);
-  color: #fff;
-}
-.btn-admin:hover {
-  background-color: var(--accent-color);
+  background: var(--admin-color);
+  color: white;
 }
 
-@media (max-width: 480px) {
+.btn-admin:hover {
+  background: var(--accent-color);
+  transform: scale(1.03);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .welcome-box {
+    width: 90%;
+    padding: 2.2rem 2rem;
+  }
+
   .landing-buttons {
     grid-template-columns: 1fr;
-    width: 90%;
   }
 }
-----------------------------
+-----------------------------
 :root {
   --primary-color: #7a4f3e;
   --accent-color: #ffa726;
@@ -289,48 +354,74 @@ export default Login;
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 /* Modal Card */
 .modal-card {
-  background-color: #fff;
+  background-color: #ffffff;
   width: 400px;
-  padding: 2.2rem;
-  border-radius: 14px;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.25);
+  padding: 2.4rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   text-align: center;
   position: relative;
-  animation: popup 0.3s ease;
+  transform: translateY(-10px);
+  animation: slideUp 0.4s ease forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-@keyframes popup {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Header Bar */
+.modal-header {
+  height: 5px;
+  border-radius: 4px;
+  margin-bottom: 1.2rem;
+}
+
+.modal-user .modal-header {
+  background: var(--primary-color);
+}
+.modal-admin .modal-header {
+  background: var(--admin-color);
 }
 
 /* Close Button */
 .close-btn {
   position: absolute;
   top: 10px;
-  right: 14px;
+  right: 15px;
   background: none;
   border: none;
   font-size: 1.5rem;
   color: var(--secondary-color);
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
 }
+
 .close-btn:hover {
   color: var(--accent-color);
 }
@@ -347,9 +438,11 @@ export default Login;
   outline: none;
   transition: border-color 0.3s;
 }
+
 .modal-card input:focus,
 .modal-card select:focus {
   border-color: var(--accent-color);
+  box-shadow: 0 0 5px rgba(255, 167, 38, 0.5);
 }
 
 /* Submit Button */
@@ -361,25 +454,27 @@ export default Login;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.modal-card button:hover {
+  transform: scale(1.03);
 }
 
 /* Themed Buttons */
 .modal-user button {
   background-color: var(--primary-color);
 }
-.modal-user button:hover {
-  background-color: var(--accent-color);
-}
-
 .modal-admin button {
   background-color: var(--admin-color);
 }
+
+.modal-user button:hover,
 .modal-admin button:hover {
   background-color: var(--accent-color);
 }
 
-/* Error box */
+/* Error Box */
 .error-box {
   color: var(--secondary-color);
   background-color: rgba(255, 0, 0, 0.05);
@@ -388,4 +483,12 @@ export default Login;
   margin-bottom: 1rem;
   border-radius: 4px;
   font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .modal-card {
+    width: 90%;
+    padding: 2rem 1.8rem;
+  }
 }

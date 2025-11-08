@@ -13,3 +13,30 @@
   content: none !important;
 }
 -------------------
+const handleSignup = async () => {
+  try {
+    const endpoint =
+      role === "User"
+        ? "https://localhost:7283/api/Users/register"
+        : "https://localhost:7283/api/Admin/register";
+
+    const dataToSend = {
+      userName,
+      email,
+      password,
+      role,
+      phoneNumber: parseInt(phoneNumber, 10),
+      location,
+    };
+
+    console.log("Signup data being sent:", dataToSend); // 👈 ADD THIS LINE
+    console.log("Signup endpoint:", endpoint); // 👈 ADD THIS TOO
+
+    await axios.post(endpoint, dataToSend);
+    alert("Signup successful! Please login.");
+    setModalType("");
+  } catch (err) {
+    console.error("Signup error:", err.response || err.message); // 👈 see actual error
+    setError("Signup failed. Please try again.");
+  }
+};

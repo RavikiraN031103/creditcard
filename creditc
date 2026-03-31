@@ -128,3 +128,72 @@ public interface AlertEmailMapper {
 </mapper>
 
 ------ - -- - - - -- - - - - - - - - - - - - - - - - - -
+
+@Override
+public MessageStatus process(MessageWrapper messageWrapper) {
+
+    log.info("SendToBankAlertProcessor - Processing started");
+
+    try {
+        // Step 1: Convert message
+        BusinessEvent businessEvent = JsonConverter.fromJson(
+                messageWrapper.getMessage(),
+                BusinessEvent.class
+        );
+
+        // Step 2: Extract recId
+        Long recId = null;
+
+        if (businessEvent.getEntityReferenceMap() != null &&
+            businessEvent.getEntityReferenceMap().get("recId") != null) {
+
+            recId = Long.valueOf(
+                    businessEvent.getEntityReferenceMap().get("recId").toString()
+            );
+        }
+
+        // Step 3: Validate
+        if (recId == null) {
+            log.error("recId is missing");
+            return MessageStatus.of(MessageWrapper.Status.FAILED, "recId missing");
+        }
+
+        log.info("recId: {}", recId);
+
+        // 🔥 Step 4: Call mapper (LIKE your docTradeFilenetMapper)
+        List<String> emailList = alertEmailMapper.getEmailIds(recId);
+
+        // Step 5: Handle no emails
+        if (emailList == null || emailList.isEmpty()) {
+            log.info("No email IDs found for recId: {}", recId);
+            return MessageStatus.of(MessageWrapper.Status.SUCCESS, "No emails found");
+        }
+
+        log.info("Emails found: {}", emailList);
+
+        // Step 6: Convert to array (since OMS needs array)
+        String[] emailIds = emailList.toArray(new String[0]);
+
+        // Step 7: Send email
+        OmsFormatter omsFormatter = new OmsFormatter();
+
+        omsFormatter.omsEmailXML(
+                emailIds,
+                String.valueOf(recId),
+                Constants.AppEvents.EVT_TTI_SEND_TO_BANK_ALERT
+        );
+
+        log.info("Email sent successfully");
+
+        return MessageStatus.of(MessageWrapper.Status.SUCCESS, "Success");
+
+    } catch (Exception e) {
+
+        log.error("SendToBankAlertProcessor Failed", e);
+
+        return MessageStatus.of(
+                MessageWrapper.Status.FAILED,
+                "Failed: " + e.getMessage()
+        );
+    }
+}

@@ -1,34 +1,130 @@
-package com.sc.cib.trade.listener;
+package com.sc.cib.trade.process.alert;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sc.cib.trade.model.request.PostAceMsgRqst;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
+import com.sc.cib.message.model.BusinessEvent;
+import com.sc.cib.message.model.MessageProcessor;
+import com.sc.cib.message.model.MessageStatus;
+import com.sc.cib.message.model.MessageWrapper;
+import com.sc.cib.message.util.JsonConverter;
+import com.sc.cib.common.data.Constants;
 
-@Component
-public class AceMessageListener {
+import lombok.extern.slf4j.Slf4j;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-    @JmsListener(destination = "ACE.QUEUE.NAME")
-    public void receiveMessage(String message) {
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Service("sendToBankAlertProcessor")
+public class SendToBankAlertProcessor implements MessageProcessor {
+
+    @Autowired
+    private AlertEmailMapper alertEmailMapper;
+
+    @Override
+    public MessageStatus process(MessageWrapper messageWrapper) {
+
+        log.info("SendToBankAlertProcessor - Processing started");
+
         try {
-            System.out.println("----- MESSAGE RECEIVED -----");
-            System.out.println("Raw Message: " + message);
+            // 🔹 Step 1: Convert message
+            BusinessEvent businessEvent = JsonConverter.fromJson(
+                    messageWrapper.getMessage(),
+                    BusinessEvent.class
+            );
 
-            PostAceMsgRqst req =
-                    mapper.readValue(message, PostAceMsgRqst.class);
+            log.info("BusinessEvent: {}", businessEvent);
 
-            System.out.println("ProcessId: " + req.getProcessId());
-            System.out.println("AceRequest: " + req.getAceRequest());
+            // 🔥 Step 2: Extract recId
+            Long recId = extractRecId(businessEvent);
 
-            // TODO: Add DB update or service call here
+            // 🔴 Step 3: Validation
+            if (recId == null) {
+                log.error("recId is missing in message");
 
-            System.out.println("----- MESSAGE PROCESSED -----");
+                return MessageStatus.of(
+                        MessageWrapper.Status.FAILED,
+                        "recId is missing"
+                );
+            }
+
+            log.info("Processing for recId: {}", recId);
+
+            // 🔥 Step 4: Fetch emails using mapper (LIKE FileSubmissionProcessor)
+            List<String> emailList = alertEmailMapper.getEmailIds(recId);
+
+            // 🔴 Step 5: Handle no emails
+            if (emailList == null || emailList.isEmpty()) {
+                log.info("No email IDs found for recId: {}", recId);
+
+                return MessageStatus.of(
+                        MessageWrapper.Status.SUCCESS,
+                        "No emails found"
+                );
+            }
+
+            log.info("Emails fetched: {}", emailList);
+
+            // 🔹 Step 6: Convert to array
+            String[] emailIds = emailList.toArray(new String[0]);
+
+            // 🔹 Step 7: Send email
+            OmsFormatter omsFormatter = new OmsFormatter();
+
+            omsFormatter.omsEmailXML(
+                    emailIds,
+                    String.valueOf(recId),
+                    Constants.AppEvents.EVT_TTI_SEND_TO_BANK_ALERT
+            );
+
+            log.info("Email sent successfully for recId: {}", recId);
+
+            // 🔹 Step 8: Success
+            return MessageStatus.of(
+                    MessageWrapper.Status.SUCCESS,
+                    "SendToBank Alert Successful"
+            );
 
         } catch (Exception e) {
-            System.err.println("Error reading message");
-            e.printStackTrace();
+
+            log.error("SendToBankAlertProcessor Failed", e);
+
+            return MessageStatus.of(
+                    MessageWrapper.Status.FAILED,
+                    "SendToBank Alert Failed: " + e.getMessage()
+            );
         }
     }
+
+-------------------------------------------------------------------------------------------
+
+
+package com.sc.cib.trade.mapper;
+
+import java.util.List;
+
+public interface AlertEmailMapper {
+
+    List<String> getEmailIds(Long recId);
 }
+
+- - - - -- - - -- -- - - -- - -- - - -- - -- - -- - - - -- - -- -- -- -
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sc.cib.trade.mapper.AlertEmailMapper">
+
+    <select id="getEmailIds" parameterType="long" resultType="string">
+        SELECT DISTINCT EMAILID
+        FROM TTI_REQ_AUTH_EMAIL
+        WHERE STEPRECID = #{recId}
+    </select>
+
+</mapper>
+
+------ - -- - - - -- - - - - - - - - - - - - - - - - - -
